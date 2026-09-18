@@ -3,31 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Календарь и Общая Заметка</title>
+    <title>Календарь и Расписание • Группа 211</title>
     <style>
         :root {
-            --bg-main: #0b0f19;
-            --panel-bg: rgba(17, 24, 39, 0.85);
-            --panel-border: rgba(255, 255, 255, 0.12);
+            --bg-main: #070913;
+            --panel-bg: rgba(13, 19, 32, 0.85);
+            --panel-border: rgba(255, 255, 255, 0.1);
             --accent-color: #3b82f6;
+            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
+            --card-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
         }
 
-        [data-theme="purple"] { --accent-color: #8b5cf6; }
-        [data-theme="green"] { --accent-color: #10b981; }
-        [data-theme="sunset"] { --accent-color: #f97316; }
-        [data-theme="pink"] { --accent-color: #ec4899; }
+        [data-theme="purple"] { 
+            --accent-color: #8b5cf6; 
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+        }
+        [data-theme="green"] { 
+            --accent-color: #10b981; 
+            --accent-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        }
+        [data-theme="sunset"] { 
+            --accent-color: #f97316; 
+            --accent-gradient: linear-gradient(135deg, #f97316 0%, #c2410c 100%);
+        }
+        [data-theme="pink"] { 
+            --accent-color: #ec4899; 
+            --accent-gradient: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+        }
 
         *, html, body, button, input, textarea, a {
             cursor: none !important;
         }
 
-        /* Плавный кастомный курсор с физикой интерполяции (lerp) и анимацией движения/состояния */
+        /* Кастомный курсор с физикой (lerp) */
         .custom-cursor {
             position: fixed;
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border: 2px solid var(--accent-color);
             border-radius: 50%;
             pointer-events: none;
@@ -37,13 +51,13 @@
                         height 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
                         border-color 0.2s, 
                         background-color 0.2s;
-            box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 16px rgba(59, 130, 246, 0.25);
         }
 
         .custom-cursor.hovered {
-            width: 52px;
-            height: 52px;
-            background-color: rgba(59, 130, 246, 0.1);
+            width: 54px;
+            height: 54px;
+            background-color: rgba(59, 130, 246, 0.12);
             border-color: #fff;
         }
 
@@ -56,35 +70,34 @@
             pointer-events: none;
             transform: translate(-50%, -50%);
             z-index: 100000;
-            transition: transform 0.1s ease-out;
         }
 
         body {
             margin: 0;
-            padding: 30px;
+            padding: 32px;
             background-color: var(--bg-main);
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             min-height: 100vh;
             box-sizing: border-box;
+            background-image: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 60%);
         }
 
         .app-container {
-            max-width: 1400px;
+            max-width: 1450px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
             gap: 24px;
         }
 
-        /* Увеличенные панели для комфортного использования */
         .glass-panel {
             background: var(--panel-bg);
-            backdrop-filter: blur(16px);
+            backdrop-filter: blur(18px);
             border: 1px solid var(--panel-border);
-            border-radius: 20px;
-            padding: 28px;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: var(--card-shadow);
         }
 
         /* Шапка */
@@ -92,18 +105,20 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 24px 32px;
+            padding: 24px 36px;
         }
 
         .app-title-area h2 {
             margin: 0;
-            font-size: 22px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
         .app-subtitle {
             font-size: 14px;
             color: var(--text-muted);
-            margin-top: 4px;
+            margin-top: 6px;
         }
 
         .app-controls {
@@ -113,7 +128,7 @@
         }
 
         .control-btn {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.06);
             border: 1px solid var(--panel-border);
             color: var(--text-main);
             padding: 14px 24px;
@@ -123,24 +138,26 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            transition: background 0.2s, border-color 0.2s, transform 0.2s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
         .control-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.12);
             border-color: var(--accent-color);
             transform: translateY(-2px);
         }
 
         .control-btn.highlight-action {
-            background: linear-gradient(135deg, var(--accent-color), rgba(59, 130, 246, 0.7));
-            border-color: var(--accent-color);
+            background: var(--accent-gradient);
+            border-color: transparent;
             color: #fff;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
         }
 
         .control-btn.highlight-action:hover {
-            filter: brightness(1.15);
+            filter: brightness(1.1);
+            transform: translateY(-2px);
         }
 
         .status-indicator {
@@ -148,52 +165,54 @@
             height: 10px;
             background-color: #10b981;
             border-radius: 50%;
-            box-shadow: 0 0 10px #10b981;
+            box-shadow: 0 0 12px #10b981;
         }
 
         /* Сетка контента */
         .main-content-grid {
             display: grid;
-            grid-template-columns: 1.1fr 1.1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 24px;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 950px) {
             .main-content-grid {
                 grid-template-columns: 1fr;
             }
         }
 
-        /* Календарь (увеличенный размер) */
+        /* Календарь */
         .calendar-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .calendar-nav h3 {
             margin: 0;
-            font-size: 18px;
+            font-size: 19px;
+            font-weight: 600;
         }
 
         .nav-btn {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--panel-border);
             color: var(--text-main);
-            padding: 10px 16px;
-            border-radius: 10px;
+            padding: 10px 18px;
+            border-radius: 12px;
             font-size: 14px;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
         .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-color);
         }
 
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
+            gap: 10px;
             text-align: center;
         }
 
@@ -205,25 +224,25 @@
         }
 
         .cal-cell {
-            padding: 16px 0;
-            background: rgba(255, 255, 255, 0.03);
+            padding: 18px 0;
+            background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--panel-border);
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 15px;
             font-weight: 500;
             transition: all 0.2s;
         }
 
         .cal-cell:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.07);
             border-color: var(--accent-color);
         }
 
         .cal-cell.active {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
+            background: var(--accent-gradient);
+            border-color: transparent;
             color: #fff;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
         }
 
         .cal-cell.has-note::after {
@@ -233,7 +252,7 @@
             height: 6px;
             background: var(--accent-color);
             border-radius: 50%;
-            margin: 4px auto 0;
+            margin: 6px auto 0;
         }
 
         .cal-cell.active.has-note::after {
@@ -244,36 +263,40 @@
             visibility: hidden;
         }
 
-        /* Заметки (увеличенные элементы) */
+        /* Заметки */
         .notes-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
         }
 
         .notes-header h3 {
             margin: 0;
-            font-size: 18px;
+            font-size: 19px;
+            font-weight: 600;
         }
 
         .task-counter {
             font-size: 13px;
             color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 8px;
         }
 
         .notes-input-area {
             display: flex;
             gap: 12px;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
 
         .notes-input-area input[type="text"] {
             flex: 1;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--panel-border);
-            border-radius: 12px;
-            padding: 12px 16px;
+            border-radius: 14px;
+            padding: 14px 18px;
             color: var(--text-main);
             font-size: 14px;
             outline: none;
@@ -284,34 +307,35 @@
         }
 
         .notes-input-area input[type="time"] {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--panel-border);
-            border-radius: 12px;
-            padding: 0 14px;
+            border-radius: 14px;
+            padding: 0 16px;
             color: var(--text-main);
             font-size: 14px;
             outline: none;
         }
 
         .primary-btn {
-            background: var(--accent-color);
+            background: var(--accent-gradient);
             border: none;
             color: #fff;
-            padding: 0 24px;
-            border-radius: 12px;
+            padding: 0 26px;
+            border-radius: 14px;
             font-weight: 600;
             font-size: 14px;
-            transition: filter 0.2s;
+            transition: filter 0.2s, transform 0.2s;
         }
         .primary-btn:hover {
             filter: brightness(1.1);
+            transform: translateY(-1px);
         }
 
         .notes-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            max-height: 300px;
+            max-height: 320px;
             overflow-y: auto;
             padding-right: 6px;
         }
@@ -319,8 +343,8 @@
         .note-row {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--panel-border);
-            border-radius: 12px;
-            padding: 14px 16px;
+            border-radius: 14px;
+            padding: 16px 18px;
             transition: background 0.2s;
         }
         .note-row:hover {
@@ -353,6 +377,7 @@
             font-size: 14px;
             color: var(--text-muted);
             margin-bottom: 12px;
+            font-weight: 500;
         }
 
         .text-btn {
@@ -366,11 +391,11 @@
         }
 
         .log-content {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.35);
             border: 1px solid var(--panel-border);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 16px;
-            height: 120px;
+            height: 130px;
             overflow-y: auto;
             font-family: monospace;
             font-size: 12px;
@@ -387,14 +412,14 @@
         .settings-modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(6px);
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.25s;
+            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 1000;
         }
 
@@ -406,35 +431,47 @@
         .settings-modal-window {
             background: var(--bg-main);
             border: 1px solid var(--panel-border);
-            border-radius: 24px;
-            width: 480px;
-            padding: 32px;
-            box-shadow: 0 24px 40px rgba(0, 0, 0, 0.6);
+            border-radius: 28px;
+            width: 520px;
+            padding: 36px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
         }
 
         .settings-modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
 
         .settings-modal-header h3 {
             margin: 0;
-            font-size: 18px;
+            font-size: 20px;
+            font-weight: 700;
         }
 
         .settings-close-btn {
-            background: transparent;
-            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
             color: var(--text-muted);
-            font-size: 18px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .settings-close-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--text-main);
         }
 
         .settings-modal-body {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 22px;
         }
 
         .setting-item {
@@ -450,8 +487,8 @@
         }
 
         .setting-title {
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 15px;
+            font-weight: 600;
         }
 
         .setting-desc {
@@ -461,31 +498,32 @@
 
         .theme-options {
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
 
         .theme-btn {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             border: 2px solid transparent;
             transition: transform 0.2s;
         }
         .theme-btn:hover {
-            transform: scale(1.1);
+            transform: scale(1.15);
         }
-
         .theme-btn.active {
             border-color: #fff;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
         }
 
         .secondary-btn {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid var(--panel-border);
             color: var(--text-main);
-            padding: 8px 16px;
-            border-radius: 10px;
+            padding: 10px 20px;
+            border-radius: 12px;
             font-size: 13px;
+            font-weight: 600;
             transition: background 0.2s;
         }
         .secondary-btn:hover {
@@ -496,83 +534,143 @@
             background: rgba(239, 68, 68, 0.12);
             border: 1px solid rgba(239, 68, 68, 0.3);
             color: #ef4444;
-            padding: 8px 16px;
-            border-radius: 10px;
+            padding: 10px 20px;
+            border-radius: 12px;
             font-size: 13px;
+            font-weight: 600;
             transition: background 0.2s;
         }
         .danger-btn:hover {
             background: rgba(239, 68, 68, 0.22);
         }
 
-        /* Исправленные интерактивные карточки расписания */
-        .schedule-day-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--panel-border);
-            border-radius: 14px;
-            padding: 16px;
-            transition: border-color 0.2s;
+        /* УНИКАЛЬНОЕ И ЭСТЕТИЧНОЕ ОФОРМЛЕНИЕ РАСПИСАНИЯ */
+        .schedule-modal-window {
+            width: 780px !important;
+            max-height: 88vh;
         }
+
+        .schedule-grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            max-height: 62vh;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        @media (max-width: 800px) {
+            .schedule-grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .schedule-day-card {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--panel-border);
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .schedule-day-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--accent-gradient);
+            border-radius: 4px 0 0 4px;
+        }
+
         .schedule-day-card:hover {
             border-color: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
 
         .schedule-day-header-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 10px;
         }
 
         .schedule-day-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--accent-color);
-        }
-
-        .schedule-subj-list {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-
-        .schedule-subj-row {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .schedule-subj-row input {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--panel-border);
-            border-radius: 8px;
+        .schedule-subj-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .schedule-subj-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
             padding: 6px 10px;
-            color: var(--text-main);
-            font-size: 13px;
-            outline: none;
             transition: border-color 0.2s;
         }
-        .schedule-subj-row input:focus {
+        .schedule-subj-row:focus-within {
             border-color: var(--accent-color);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .schedule-pair-num {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-color);
+            background: rgba(59, 130, 246, 0.1);
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .schedule-subj-row input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 500;
+            outline: none;
         }
 
         .icon-action-btn {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--panel-border);
             color: var(--text-muted);
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 11px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            flex-shrink: 0;
         }
         .icon-action-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.12);
             color: var(--text-main);
         }
         .icon-action-btn.danger:hover {
@@ -582,36 +680,41 @@
         }
 
         .add-subject-btn {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.03);
             border: 1px dashed var(--panel-border);
             color: var(--text-muted);
             width: 100%;
-            padding: 6px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 12px;
             font-size: 12px;
+            font-weight: 600;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .add-subject-btn:hover {
             border-color: var(--accent-color);
             color: var(--accent-color);
-            background: rgba(59, 130, 246, 0.05);
+            background: rgba(59, 130, 246, 0.06);
         }
 
         /* AI Чат окна */
         .ai-chat-window {
             position: fixed;
-            bottom: 30px; right: 30px;
-            width: 380px; height: 480px;
+            bottom: 32px; right: 32px;
+            width: 400px; height: 500px;
             background: var(--bg-main);
             border: 1px solid var(--panel-border);
-            border-radius: 20px;
+            border-radius: 24px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 16px 32px rgba(0,0,0,0.6);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
             transform: translateY(20px);
             opacity: 0;
             pointer-events: none;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 999;
         }
 
@@ -625,7 +728,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 20px;
+            padding: 18px 22px;
             border-bottom: 1px solid var(--panel-border);
         }
 
@@ -633,7 +736,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
         }
 
@@ -641,30 +744,24 @@
             width: 8px; height: 8px;
             background: var(--accent-color);
             border-radius: 50%;
-        }
-
-        .ai-close-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-size: 16px;
+            box-shadow: 0 0 10px var(--accent-color);
         }
 
         .ai-chat-messages {
             flex: 1;
-            padding: 16px;
+            padding: 18px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             font-size: 13px;
         }
 
         .ai-msg {
-            padding: 10px 14px;
-            border-radius: 12px;
+            padding: 12px 16px;
+            border-radius: 14px;
             max-width: 85%;
-            line-height: 1.4;
+            line-height: 1.45;
         }
 
         .ai-msg.ai {
@@ -674,24 +771,24 @@
         }
 
         .ai-msg.user {
-            background: var(--accent-color);
+            background: var(--accent-gradient);
             color: #fff;
             align-self: flex-end;
         }
 
         .ai-chat-input-area {
-            padding: 16px;
+            padding: 18px;
             border-top: 1px solid var(--panel-border);
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         .ai-chat-input-area input {
             flex: 1;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--panel-border);
-            border-radius: 10px;
-            padding: 10px 14px;
+            border-radius: 12px;
+            padding: 12px 16px;
             color: var(--text-main);
             font-size: 13px;
             outline: none;
@@ -700,7 +797,7 @@
 </head>
 <body>
 
-    <!-- Плавный кастомный курсор с анимацией физики (lerp) -->
+    <!-- Плавный кастомный курсор с физикой интерполяции (lerp) -->
     <div class="custom-cursor" id="customCursor"></div>
     <div class="cursor-dot" id="cursorDot"></div>
 
@@ -708,7 +805,7 @@
         <!-- Шапка приложения -->
         <header class="app-header glass-panel">
             <div class="app-title-area">
-                <h2>🗓️ Календарь и Общая Заметка</h2>
+                <h2>🗓️ Календарь и Расписание</h2>
                 <div class="app-subtitle">Группа 211 • Технология машиностроения</div>
             </div>
             <div class="app-controls">
@@ -719,7 +816,7 @@
                 <button class="control-btn highlight-action" id="toggleAiChatBtn" title="ИИ Помощник">
                     🤖 ИИ Чат
                 </button>
-                <button class="control-btn" id="settingsBtn" title="Настройки" style="padding: 14px 16px;">
+                <button class="control-btn" id="settingsBtn" title="Настройки" style="padding: 14px 18px;">
                     ⚙️
                 </button>
             </div>
@@ -771,18 +868,22 @@
         </div>
     </div>
 
-    <!-- Модальное окно РАСПИСАНИЯ (С исправлениями интерактивности сохранения) -->
+    <!-- Премиальное модальное окно РАСПИСАНИЯ с ультра-дизайном -->
     <div class="settings-modal-overlay" id="scheduleModal">
-        <div class="settings-modal-window" style="width: 650px; max-height: 85vh;">
-            <div class="settings-modal-header">
-                <h3>📚 Редактирование расписания группы 211</h3>
+        <div class="settings-modal-window schedule-modal-window glass-panel" style="padding: 32px;">
+            <div class="settings-modal-header" style="margin-bottom: 22px;">
+                <div>
+                    <h3>📚 Расписание занятий • Группа 211</h3>
+                    <div class="app-subtitle" style="margin-top: 2px;">Технология машиностроения</div>
+                </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
-                    <button class="secondary-btn" id="saveScheduleBtn" style="background: var(--accent-color); color: #fff; border: none;">Сохранить</button>
+                    <button class="primary-btn" id="saveScheduleBtn" style="padding: 10px 22px;">Сохранить изменения</button>
                     <button class="settings-close-btn" id="closeScheduleModalBtn">✕</button>
                 </div>
             </div>
-            <div class="settings-modal-body" id="scheduleViewContainer" style="max-height: 65vh; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-right: 6px;">
-                <!-- Рендерится через JS с возможностью редактирования и добавления/удаления пар -->
+            <!-- Сетка карточек дней недели -->
+            <div class="schedule-grid-container" id="scheduleViewContainer">
+                <!-- Рендерится через JS с потрясающим оформлением -->
             </div>
         </div>
     </div>
@@ -794,14 +895,14 @@
                 <div class="ai-status-dot"></div>
                 <span>ИИ Ассистент (Группа 211)</span>
             </div>
-            <button class="ai-close-btn" id="closeAiChatBtn">✕</button>
+            <button class="settings-close-btn" id="closeAiChatBtn" style="width: 28px; height: 28px; font-size: 14px;">✕</button>
         </div>
         <div class="ai-chat-messages" id="aiChatMessages">
             <div class="ai-msg ai">Привет! Напиши мне задачу или расписание в свободной форме (например: *«Поставь пару по инженерной графике на среду»*), и я сам распределю её и отправлю в Telegram!</div>
         </div>
         <div class="ai-chat-input-area">
             <input type="text" id="aiChatInput" placeholder="Введите сообщение для ИИ...">
-            <button class="primary-btn" id="aiSendBtn">➤</button>
+            <button class="primary-btn" id="aiSendBtn" style="padding: 0 18px;">➤</button>
         </div>
     </div>
 
@@ -809,7 +910,7 @@
     <div class="settings-modal-overlay" id="settingsModal">
         <div class="settings-modal-window">
             <div class="settings-modal-header">
-                <h3>⚙️ Настройки и бэкап</h3>
+                <h3>⚙️ Настройки интерфейса</h3>
                 <button class="settings-close-btn" id="closeSettingsBtn">✕</button>
             </div>
             <div class="settings-modal-body">
@@ -831,7 +932,7 @@
                         <span class="setting-title">Экспорт данных</span>
                         <span class="setting-desc">Скачать все заметки и расписание в JSON</span>
                     </div>
-                    <button class="secondary-btn" id="exportBtn">Скачать</button>
+                    <button class="secondary-btn" id="exportBtn">Скачать бэкап</button>
                 </div>
                 <div class="setting-item">
                     <div class="setting-info">
@@ -849,13 +950,13 @@
         let selectedDateStr = formatDateKey(new Date());
         let notesData = JSON.parse(localStorage.getItem('app_notes')) || {};
         
-        // Хранилище расписания (теперь интерактивное и сохраняемое)
         let scheduleData = JSON.parse(localStorage.getItem('app_schedule')) || [
-            { day: 'Понедельник', items: ['Учебная практика (мастерские)', 'Технология машиностроения'] },
-            { day: 'Вторник', items: ['Процессы формообразования', 'Иностранный язык'] },
-            { day: 'Среда', items: ['Инженерная графика', 'Технология машиностроения'] },
-            { day: 'Четверг', items: ['Сопротивление материалов', 'Электротехника'] },
-            { day: 'Пятница', items: ['Физическая культура', 'Базовая математика'] }
+            { day: 'Понедельник', icon: '🛠️', items: ['Учебная практика (мастерские)', 'Технология машиностроения'] },
+            { day: 'Вторник', icon: '⚙️', items: ['Процессы формообразования', 'Иностранный язык'] },
+            { day: 'Среда', icon: '📐', items: ['Инженерная графика', 'Технология машиностроения'] },
+            { day: 'Четверг', icon: '⚡', items: ['Сопротивление материалов', 'Электротехника'] },
+            { day: 'Пятница', icon: '🏆', items: ['Физическая культура', 'Базовая математика'] },
+            { day: 'Суббота', icon: '☕', items: ['Самостоятельная работа / Выходной'] }
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -868,7 +969,7 @@
             addLog('Система полностью инициализирована.', 'success');
         });
 
-        // Плавный кастомный курсор с физикой интерполяции (lerp) и расширением при наведении на интерактивные элементы
+        // Плавный кастомный курсор с физикой интерполяции (lerp)
         function initCustomCursor() {
             const cursor = document.getElementById('customCursor');
             const dot = document.getElementById('cursorDot');
@@ -878,7 +979,7 @@
             let mouseY = window.innerHeight / 2;
             let cursorX = mouseX;
             let cursorY = mouseY;
-            const speed = 0.22; // Плавность преследования
+            const speed = 0.22;
 
             window.addEventListener('mousemove', (e) => {
                 mouseX = e.clientX;
@@ -887,7 +988,6 @@
                 dot.style.top = `${mouseY}px`;
             });
 
-            // Интерактивные ховер-эффекты для всех кликабельных элементов
             const interactiveSelectors = 'button, input, .cal-cell, .note-row, label';
             document.body.addEventListener('mouseover', (e) => {
                 if (e.target.closest(interactiveSelectors)) {
@@ -1068,7 +1168,7 @@
             addLog(`Задача удалена из расписания.`, 'info');
         };
 
-        // Исправленный рендеринг расписания с полями ввода для редактирования
+        // Рендеринг потрясающе оформленного расписания в карточках
         function renderSchedule() {
             const container = document.getElementById('scheduleViewContainer');
             if (!container) return;
@@ -1082,6 +1182,7 @@
                 block.items.forEach((subj, subjIndex) => {
                     subjectsHtml += `
                         <div class="schedule-subj-row">
+                            <div class="schedule-pair-num">${subjIndex + 1}</div>
                             <input type="text" value="${escapeHtml(subj)}" data-day="${dayIndex}" data-subj="${subjIndex}" class="schedule-input-field">
                             <button class="icon-action-btn danger" onclick="removeSubject(${dayIndex}, ${subjIndex})" title="Удалить пару">✕</button>
                         </div>
@@ -1090,19 +1191,25 @@
 
                 card.innerHTML = `
                     <div class="schedule-day-header-row">
-                        <div class="schedule-day-title">${block.day}</div>
+                        <div class="schedule-day-title">
+                            <span>${block.icon || '📅'}</span>
+                            <span>${block.day}</span>
+                        </div>
+                        <span style="font-size: 11px; color: var(--text-muted); background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 6px;">${block.items.length} пар(ы)</span>
                     </div>
                     <div class="schedule-subj-list">
                         ${subjectsHtml}
                     </div>
-                    <button class="add-subject-btn" onclick="addSubject(${dayIndex})">+ Добавить пару</button>
+                    <button class="add-subject-btn" onclick="addSubject(${dayIndex})">
+                        <span>＋</span> Добавить пару
+                    </button>
                 `;
                 container.appendChild(card);
             });
         }
 
         window.addSubject = function(dayIndex) {
-            scheduleData[dayIndex].items.push('Новая пара');
+            scheduleData[dayIndex].items.push('Новая дисциплина');
             renderSchedule();
         };
 
