@@ -83,7 +83,7 @@
             <button id="closeAiChatBtn" class="ai-close-btn">✕</button>
         </div>
         <div id="aiChatMessages" class="ai-chat-messages">
-            <div class="ai-msg ai">Привет! Я твой локальный ассистент. Напиши, например: «Добавь заметку на 21 сентября чертеж по инженерии» 🚀</div>
+            <div class="ai-msg ai">Привет! Загрузи скриншот расписания в настройках, а потом пиши мне: «Дз по инженерии сделать чертеж» 🚀</div>
         </div>
         <div class="ai-chat-input-area">
             <input type="text" id="aiChatInput" placeholder="Спроси о чем-нибудь...">
@@ -91,14 +91,23 @@
         </div>
     </div>
 
-    <!-- Модальное окно настроек (Экспорт / Импорт) -->
+    <!-- Модальное окно настроек (Экспорт / Импорт / Расписание) -->
     <div id="settingsModal" class="settings-modal-overlay">
         <div class="settings-modal-window">
             <div class="settings-modal-header">
-                <h3>⚙️ Настройки и бэкап</h3>
+                <h3>⚙️ Настройки и расписание</h3>
                 <button id="closeSettingsBtn" class="settings-close-btn">✕</button>
             </div>
             <div class="settings-modal-body">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-title">Загрузить расписание</span>
+                        <span class="setting-desc">Скриншот для авто-распознавания пар</span>
+                    </div>
+                    <label class="file-upload-label secondary-btn" style="cursor: pointer;">
+                        Загрузить <input type="file" id="importScheduleImage" accept="image/*" style="display: none;">
+                    </label>
+                </div>
                 <div class="setting-item">
                     <div class="setting-info">
                         <span class="setting-title">Экспорт данных</span>
