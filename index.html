@@ -10,31 +10,33 @@
 
     <div class="app-container">
         <!-- Шапка приложения -->
-        <header class="app-header">
-            <div class="header-title">
+        <header class="app-header glass-panel">
+            <div class="app-title-area">
                 <h2>📅 Календарь и Медиа-Заметки</h2>
-                <span class="header-subtitle">Синхронизировано с LocalStorage</span>
+                <span class="app-subtitle">Синхронизировано с LocalStorage и Telegram</span>
             </div>
-            <div class="header-controls">
-                <span class="status-dot"></span>
+            <div class="app-controls">
+                <div class="status-indicator" title="Сервер активен"></div>
+                <button id="settingsBtn" class="control-btn" title="Настройки">⚙️</button>
             </div>
         </header>
 
-        <!-- Основной контент: Календарь и Заметки -->
-        <div class="main-grid">
+        <!-- Основная сетка -->
+        <div class="main-content-grid">
             <!-- Блок календаря -->
-            <div class="card calendar-card">
-                <div class="calendar-header-nav">
-                    <button id="prevMonthBtn" class="control-btn">◀</button>
+            <div class="glass-panel calendar-card">
+                <div class="calendar-nav">
+                    <button id="prevMonthBtn" class="nav-btn">◀</button>
                     <h3 id="calendarMonthTitle">Сентябрь 2026</h3>
-                    <button id="nextMonthBtn" class="control-btn">▶</button>
+                    <button id="nextMonthBtn" class="nav-btn">▶</button>
                 </div>
-                <!-- Сетка календаря, куда JS вставляет дни -->
-                <div id="calendarGrid" class="calendar-grid"></div>
+                <div id="calendarGrid" class="calendar-grid">
+                    <!-- Заголовки дней недели и ячейки генерируются через JS -->
+                </div>
             </div>
 
             <!-- Блок заметок -->
-            <div class="card notes-card">
+            <div class="glass-panel notes-card">
                 <div class="notes-header">
                     <h3 id="selectedDateSubtitle">Заметки на день</h3>
                     <span id="taskCounter" class="task-counter">0 историй</span>
@@ -42,25 +44,28 @@
                 
                 <div class="notes-input-area">
                     <input type="text" id="noteInput" placeholder="Новая задача или заметка...">
-                    <button id="addNoteBtn" class="add-btn">⚡</button>
+                    <button id="addNoteBtn" class="primary-btn">⚡</button>
                 </div>
 
                 <div id="notesList" class="notes-list">
-                    <!-- Сюда JS выводит список задач -->
+                    <!-- Список задач динамический -->
                 </div>
             </div>
         </div>
 
         <!-- Системный лог -->
-        <div class="card log-card">
+        <div class="glass-panel system-log-panel">
             <div class="log-header">
                 <span>Системный лог</span>
-                <button id="clearLogsBtn" class="clear-btn">Очистить</button>
+                <button id="clearLogsBtn" class="text-btn">Очистить</button>
             </div>
-            <div id="logContent" class="log-content"></div>
+            <div id="logContent" class="log-content">
+                <!-- Сюда падают логи -->
+            </div>
         </div>
     </div>
 
+    <!-- Подключаем твой финальный скрипт -->
     <script src="script.js"></script>
 </body>
 </html>
