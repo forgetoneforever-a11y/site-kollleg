@@ -700,6 +700,90 @@
             background: rgba(59, 130, 246, 0.06);
         }
 
+        /* ОВЕРЛЕЙ ЮТУБА (СТИЛИЗАЦИЯ И ОКНО) */
+        .youtube-overlay-modal-window {
+            width: 840px !important;
+            max-height: 90vh;
+        }
+
+        .yt-overlay-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .yt-player-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .yt-player-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .yt-controls-panel {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--panel-border);
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .yt-url-input-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .yt-url-input-row input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 12px 18px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .yt-url-input-row input:focus {
+            border-color: #ef4444;
+        }
+
+        .yt-presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .yt-preset-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--panel-border);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .yt-preset-chip:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
         /* AI Чат окна */
         .ai-chat-window {
             position: fixed;
@@ -813,6 +897,9 @@
                 <button class="control-btn highlight-action" id="openScheduleModalBtn" title="Расписание группы">
                     📚 Расписание группы
                 </button>
+                <button class="control-btn highlight-action" id="openYtOverlayBtn" title="YouTube Оверлей" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">
+                    📺 YouTube Оверлей
+                </button>
                 <button class="control-btn highlight-action" id="toggleAiChatBtn" title="ИИ Помощник">
                     🤖 ИИ Чат
                 </button>
@@ -868,7 +955,7 @@
         </div>
     </div>
 
-    <!-- Премиальное модальное окно РАСПИСАНИЯ с ультра-дизайном -->
+    <!-- Премиальное модальное окно РАСПИСАНИЯ -->
     <div class="settings-modal-overlay" id="scheduleModal">
         <div class="settings-modal-window schedule-modal-window glass-panel" style="padding: 32px;">
             <div class="settings-modal-header" style="margin-bottom: 22px;">
@@ -881,9 +968,40 @@
                     <button class="settings-close-btn" id="closeScheduleModalBtn">✕</button>
                 </div>
             </div>
-            <!-- Сетка карточек дней недели -->
-            <div class="schedule-grid-container" id="scheduleViewContainer">
-                <!-- Рендерится через JS с потрясающим оформлением -->
+            <div class="schedule-grid-container" id="scheduleViewContainer"></div>
+        </div>
+    </div>
+
+    <!-- НОВОЕ МОДАЛЬНОЕ ОКНО: YouTube Оверлей -->
+    <div class="settings-modal-overlay" id="ytOverlayModal">
+        <div class="settings-modal-window youtube-overlay-modal-window glass-panel" style="padding: 32px;">
+            <div class="settings-modal-header" style="margin-bottom: 20px;">
+                <div>
+                    <h3>📺 YouTube Оверлей & Медиаплеер</h3>
+                    <div class="app-subtitle" style="margin-top: 2px;">Фоновое воспроизведение видео или музыки во время учебы</div>
+                </div>
+                <button class="settings-close-btn" id="closeYtModalBtn">✕</button>
+            </div>
+            <div class="yt-overlay-grid">
+                <!-- Плеер -->
+                <div class="yt-player-container">
+                    <iframe id="ytIframePlayer" src="https://www.youtube.com/embed/jfKfPfyJRdk" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <!-- Управление -->
+                <div class="yt-controls-panel">
+                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Ссылка или ID видео YouTube</div>
+                    <div class="yt-url-input-row">
+                        <input type="text" id="ytUrlInput" placeholder="Вставьте ссылку (например: https://youtu.be/...) или ID видео">
+                        <button class="primary-btn" id="loadYtVideoBtn" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">Запустить</button>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Быстрый выбор фоновых трансляций и расслабляющей музыки:</div>
+                    <div class="yt-presets">
+                        <button class="yt-preset-chip" onclick="setYtPreset('jfKfPfyJRdk')">🎧 Lofi Girl (Chill Radio)</button>
+                        <button class="yt-preset-chip" onclick="setYtPreset('5qap5aO4i9A')">☕ Lofi Hip Hop</button>
+                        <button class="yt-preset-chip" onclick="setYtPreset('TURbeGDekIo')">🌧️ Дождь и Камин</button>
+                        <button class="yt-preset-chip" onclick="setYtPreset('DWcJFNfaw9c')">🚀 Cyberpunk Synthwave</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -988,7 +1106,7 @@
                 dot.style.top = `${mouseY}px`;
             });
 
-            const interactiveSelectors = 'button, input, .cal-cell, .note-row, label';
+            const interactiveSelectors = 'button, input, .cal-cell, .note-row, label, .yt-preset-chip';
             document.body.addEventListener('mouseover', (e) => {
                 if (e.target.closest(interactiveSelectors)) {
                     cursor.classList.add('hovered');
@@ -1168,7 +1286,7 @@
             addLog(`Задача удалена из расписания.`, 'info');
         };
 
-        // Рендеринг потрясающе оформленного расписания в карточках
+        // Рендеринг расписания в карточках
         function renderSchedule() {
             const container = document.getElementById('scheduleViewContainer');
             if (!container) return;
@@ -1236,6 +1354,30 @@
             document.getElementById('scheduleModal')?.classList.remove('active');
         }
 
+        // Логика YouTube плеера
+        function extractYtVideoId(urlOrId) {
+            if (!urlOrId) return 'jfKfPfyJRdk';
+            let match = urlOrId.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+            if (match && match[1]) return match[1];
+            return urlOrId.trim();
+        }
+
+        window.setYtPreset = function(videoId) {
+            const iframe = document.getElementById('ytIframePlayer');
+            if (iframe) {
+                iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                addLog(`[YouTube] Запущено видео: ${videoId}`, 'success');
+            }
+        };
+
+        function loadCustomYtVideo() {
+            const input = document.getElementById('ytUrlInput');
+            if (!input || !input.value.trim()) return;
+            const videoId = extractYtVideoId(input.value);
+            setYtPreset(videoId);
+            input.value = '';
+        }
+
         function addLog(text, type = 'info') {
             const logContent = document.getElementById('logContent');
             if (!logContent) return;
@@ -1277,6 +1419,15 @@
             });
             document.getElementById('closeScheduleModalBtn')?.addEventListener('click', () => scheduleModal?.classList.remove('active'));
             document.getElementById('saveScheduleBtn')?.addEventListener('click', saveScheduleChanges);
+
+            // Модальное окно YouTube оверлея
+            const ytModal = document.getElementById('ytOverlayModal');
+            document.getElementById('openYtOverlayBtn')?.addEventListener('click', () => ytModal?.classList.add('active'));
+            document.getElementById('closeYtModalBtn')?.addEventListener('click', () => ytModal?.classList.remove('active'));
+            document.getElementById('loadYtVideoBtn')?.addEventListener('click', loadCustomYtVideo);
+            document.getElementById('ytUrlInput')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') loadCustomYtVideo();
+            });
 
             // Модальное окно настроек
             const settingsModal = document.getElementById('settingsModal');
