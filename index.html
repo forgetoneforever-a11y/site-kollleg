@@ -544,7 +544,7 @@
             background: rgba(239, 68, 68, 0.22);
         }
 
-        /* УНИКАЛЬНОЕ И ЭСТЕТИЧНОЕ ОФОРМЛЕНИЕ РАСПИСАНИЯ */
+        /* РАСПИСАНИЕ */
         .schedule-modal-window {
             width: 780px !important;
             max-height: 88vh;
@@ -700,7 +700,7 @@
             background: rgba(59, 130, 246, 0.06);
         }
 
-        /* ОВЕРЛЕЙ ЮТУБА (СТИЛИЗАЦИЯ И ОКНО) */
+        /* YouTube ОВЕРЛЕЙ */
         .youtube-overlay-modal-window {
             width: 840px !important;
             max-height: 90vh;
@@ -972,13 +972,13 @@
         </div>
     </div>
 
-    <!-- НОВОЕ МОДАЛЬНОЕ ОКНО: YouTube Оверлей -->
+    <!-- МОДАЛЬНОЕ ОКНО: YouTube Оверлей с поиском -->
     <div class="settings-modal-overlay" id="ytOverlayModal">
         <div class="settings-modal-window youtube-overlay-modal-window glass-panel" style="padding: 32px;">
             <div class="settings-modal-header" style="margin-bottom: 20px;">
                 <div>
                     <h3>📺 YouTube Оверлей & Медиаплеер</h3>
-                    <div class="app-subtitle" style="margin-top: 2px;">Фоновое воспроизведение видео или музыки во время учебы</div>
+                    <div class="app-subtitle" style="margin-top: 2px;">Поиск и фоновое воспроизведение музыки или видео во время учебы</div>
                 </div>
                 <button class="settings-close-btn" id="closeYtModalBtn">✕</button>
             </div>
@@ -987,12 +987,12 @@
                 <div class="yt-player-container">
                     <iframe id="ytIframePlayer" src="https://www.youtube.com/embed/jfKfPfyJRdk" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
-                <!-- Управление -->
+                <!-- Управление и поиск -->
                 <div class="yt-controls-panel">
-                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Ссылка или ID видео YouTube</div>
+                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Поиск или ссылка YouTube</div>
                     <div class="yt-url-input-row">
-                        <input type="text" id="ytUrlInput" placeholder="Вставьте ссылку (например: https://youtu.be/...) или ID видео">
-                        <button class="primary-btn" id="loadYtVideoBtn" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">Запустить</button>
+                        <input type="text" id="ytUrlInput" placeholder="Введите название (например: Lofi hip hop) или ссылку...">
+                        <button class="primary-btn" id="loadYtVideoBtn" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">Найти</button>
                     </div>
                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Быстрый выбор фоновых трансляций и расслабляющей музыки:</div>
                     <div class="yt-presets">
@@ -1354,12 +1354,17 @@
             document.getElementById('scheduleModal')?.classList.remove('active');
         }
 
-        // Логика YouTube плеера
-        function extractYtVideoId(urlOrId) {
-            if (!urlOrId) return 'jfKfPfyJRdk';
-            let match = urlOrId.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+        // Логика YouTube плеера и поиска
+        function extractYtVideoId(urlOrQuery) {
+            if (!urlOrQuery) return 'jfKfPfyJRdk';
+            let match = urlOrQuery.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
             if (match && match[1]) return match[1];
-            return urlOrId.trim();
+            
+            // Если введена строка поиска, используем встроенный поисковый запрос YouTube
+            if (urlOrQuery.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(urlOrQuery)) {
+                return urlOrQuery;
+            }
+            return null;
         }
 
         window.setYtPreset = function(videoId) {
@@ -1373,8 +1378,21 @@
         function loadCustomYtVideo() {
             const input = document.getElementById('ytUrlInput');
             if (!input || !input.value.trim()) return;
-            const videoId = extractYtVideoId(input.value);
-            setYtPreset(videoId);
+            const query = input.value.trim();
+            const videoId = extractYtVideoId(query);
+
+            const iframe = document.getElementById('ytIframePlayer');
+            if (iframe) {
+                if (videoId) {
+                    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                    addLog(`[YouTube] Воспроизведение по ссылке/ID`, 'success');
+                } else {
+                    // Переключаем плеер на режим поиска YouTube по ключевым словам
+                    const encodedQuery = encodeURIComponent(query);
+                    iframe.src = `https://www.youtube.com/embed?listType=search&list=${encodedQuery}&autoplay=1`;
+                    addLog(`[YouTube] Поиск по запросу: "${query}"`, 'success');
+                }
+            }
             input.value = '';
         }
 
