@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Календарь и Медиа-Заметки</title>
+    <title>Календарь и Общая Заметка</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Полное скрытие стандартного курсора для всей страницы и элементов */
+        *, html, body, button, input, textarea, a {
+            cursor: none !important;
+        }
+    </style>
 </head>
 <body>
 
@@ -12,127 +18,136 @@
         <!-- Шапка приложения -->
         <header class="app-header glass-panel">
             <div class="app-title-area">
-                <h2>📅 Календарь и Медиа-Заметки</h2>
-                <span class="app-subtitle">Синхронизировано с LocalStorage и Telegram</span>
+                <h2>🗓️ Календарь и Общая Заметка</h2>
+                <div class="app-subtitle">Группа 211 • Технология машиностроения</div>
             </div>
             <div class="app-controls">
-                <div class="status-indicator" title="Сервер активен"></div>
-                <!-- Кнопка открытия AI-чата -->
-                <button id="toggleAiChatBtn" class="control-btn" title="ИИ Помощник">🤖</button>
-                <!-- Кнопка настроек -->
-                <button id="settingsBtn" class="control-btn" title="Настройки и бэкап">⚙️</button>
+                <div class="status-indicator" title="Система активна"></div>
+                <button class="control-btn" id="toggleAiChatBtn" title="ИИ Помощник">🤖</button>
+                <button class="control-btn" id="settingsBtn" title="Настройки">⚙️</button>
             </div>
         </header>
 
-        <!-- Основная сетка -->
+        <!-- Основной контент: Сетка -->
         <div class="main-content-grid">
-            <!-- Блок календаря -->
+            <!-- Левая колонка: Календарь -->
             <div class="glass-panel calendar-card">
                 <div class="calendar-nav">
-                    <button id="prevMonthBtn" class="nav-btn">◀</button>
+                    <button class="nav-btn" id="prevMonthBtn">◀</button>
                     <h3 id="calendarMonthTitle">Сентябрь 2026</h3>
-                    <button id="nextMonthBtn" class="nav-btn">▶</button>
+                    <button class="nav-btn" id="nextMonthBtn">▶</button>
                 </div>
-                <div id="calendarGrid" class="calendar-grid"></div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Заполняется динамически через JS -->
+                </div>
             </div>
 
-            <!-- Блок заметок на день -->
+            <!-- Правая колонка: Заметки на выбранный день -->
             <div class="glass-panel notes-card">
                 <div class="notes-header">
-                    <h3 id="selectedDateSubtitle">Заметки на день</h3>
-                    <span id="taskCounter" class="task-counter">0 историй</span>
+                    <h3 id="selectedDateSubtitle">Заметки</h3>
+                    <span class="task-counter" id="taskCounter">0 историй</span>
                 </div>
-                
-                <div class="notes-input-area" style="flex-direction: column; gap: 8px;">
-                    <input type="text" id="noteInput" placeholder="Новая задача или заметка...">
-                    
-                    <div style="display: flex; gap: 8px; width: 100%; align-items: center;">
-                        <input type="time" id="noteTimeInput" class="control-btn" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 6px 10px; border-radius: 8px; font-family: inherit; font-size: 13px;" value="12:00">
-                        
-                        <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; user-select: none;">
-                            <input type="checkbox" id="sendToTgCheck" checked style="accent-color: #3b82f6;"> 
-                            <span>Бот в Telegram</span>
-                        </label>
-
-                        <button id="addNoteBtn" class="primary-btn" style="margin-left: auto;">⚡</button>
-                    </div>
+                <div class="notes-input-area">
+                    <input type="text" id="noteInput" placeholder="Новая задача или событие...">
+                    <input type="time" id="noteTimeInput" value="12:00" style="background: rgba(255,255,255,0.05); border: 1px solid var(--panel-border); border-radius: 10px; padding: 6px 10px; color: var(--text-main); font-size: 12px; outline: none;">
+                    <button class="primary-btn" id="addNoteBtn">Добавить</button>
                 </div>
-
-                <div id="notesList" class="notes-list"></div>
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 11px; color: var(--text-muted);">
+                    <input type="checkbox" id="sendToTgCheck" checked style="cursor: none !important;"> Дублировать в Telegram-бот
+                </div>
+                <div class="notes-list" id="notesList">
+                    <!-- Список заметок -->
+                </div>
             </div>
         </div>
 
-        <!-- НОВАЯ ПАНЕЛЬ: Расписание колледжа -->
-        <div class="glass-panel" style="margin-top: 16px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="font-size: 15px; font-weight: 600; color: #fff;">🎓 Расписание пар колледжа</h3>
-                <label class="secondary-btn" style="cursor: pointer; font-size: 12px; padding: 6px 12px;">
-                    📷 Загрузить скриншот расписания <input type="file" id="importScheduleImage" accept="image/*" style="display: none;">
-                </label>
+        <!-- Нижняя часть: Расписание колледжа и Логи -->
+        <div class="main-content-grid">
+            <!-- Виджет расписания -->
+            <div class="glass-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="font-size: 15px; font-weight: 600;">📚 Расписание группы 211</h3>
+                    <label class="secondary-btn" style="cursor: none !important; display: inline-flex; align-items: center; gap: 4px;">
+                        📷 Скрин расписания
+                        <input type="file" id="importScheduleImage" accept="image/*" style="display: none;">
+                    </label>
+                </div>
+                <div id="scheduleViewContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                    <!-- Рендерится через JS -->
+                </div>
             </div>
-            <div id="scheduleViewContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
-                <!-- Сюда динамически рендерится расписание по дням -->
-            </div>
-        </div>
 
-        <!-- Системный лог -->
-        <div class="glass-panel system-log-panel" style="margin-top: 16px;">
-            <div class="log-header">
-                <span>Системный лог</span>
-                <button id="clearLogsBtn" class="text-btn">Очистить</button>
+            <!-- Системный лог / Консоль -->
+            <div class="glass-panel system-log-panel">
+                <div class="log-header">
+                    <span>Системный лог (Render & Telegram)</span>
+                    <button class="text-btn" id="clearLogsBtn">Очистить</button>
+                </div>
+                <div class="log-content" id="logContent">
+                    <div class="log-item info">[Система] Ожидание действий пользователя...</div>
+                </div>
             </div>
-            <div id="logContent" class="log-content"></div>
         </div>
     </div>
 
     <!-- Плавающий AI Чат -->
-    <div id="aiChatWindow" class="ai-chat-window">
+    <div class="ai-chat-window" id="aiChatWindow">
         <div class="ai-chat-header">
             <div class="ai-chat-title">
-                <span class="ai-status-dot"></span>
-                <span>ИИ Помощник</span>
+                <div class="ai-status-dot"></div>
+                <span>ИИ Ассистент (Группа 211)</span>
             </div>
-            <button id="closeAiChatBtn" class="ai-close-btn">✕</button>
+            <button class="ai-close-btn" id="closeAiChatBtn">✕</button>
         </div>
-        <div id="aiChatMessages" class="ai-chat-messages">
-            <div class="ai-msg ai">Привет! Загрузи скриншот расписания снизу, а потом пиши мне: «Дз по инженерии сделать чертеж» или «В пятницу сделать аппарат» 🚀</div>
+        <div class="ai-chat-messages" id="aiChatMessages">
+            <div class="ai-msg ai">Привет! Напиши мне задачу или расписание в свободной форме (например: *«Поставь пару по инженерной графике на среду»*), и я сам распределю её и отправлю в Telegram!</div>
         </div>
         <div class="ai-chat-input-area">
-            <input type="text" id="aiChatInput" placeholder="Спроси о чем-нибудь...">
-            <button id="aiSendBtn" class="primary-btn">➤</button>
+            <input type="text" id="aiChatInput" placeholder="Введите сообщение для ИИ...">
+            <button class="primary-btn" id="aiSendBtn">➤</button>
         </div>
     </div>
 
     <!-- Модальное окно настроек -->
-    <div id="settingsModal" class="settings-modal-overlay">
+    <div class="settings-modal-overlay" id="settingsModal">
         <div class="settings-modal-window">
             <div class="settings-modal-header">
                 <h3>⚙️ Настройки и бэкап</h3>
-                <button id="closeSettingsBtn" class="settings-close-btn">✕</button>
+                <button class="settings-close-btn" id="closeSettingsBtn">✕</button>
             </div>
             <div class="settings-modal-body">
+                <!-- Выбор цветовой темы -->
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-title">Цветовая тема</span>
+                        <span class="setting-desc">Выберите акцентный стиль интерфейса</span>
+                    </div>
+                    <div class="theme-options">
+                        <button class="theme-btn" data-theme="default" style="background: #3b82f6;" title="Синий классический"></button>
+                        <button class="theme-btn" data-theme="purple" style="background: #8b5cf6;" title="Фиолетовый киберпанк"></button>
+                        <button class="theme-btn" data-theme="green" style="background: #10b981;" title="Неоновый зеленый"></button>
+                        <button class="theme-btn" data-theme="sunset" style="background: #f97316;" title="Закат оранжевый"></button>
+                        <button class="theme-btn" data-theme="pink" style="background: #ec4899;" title="Розовый неон"></button>
+                    </div>
+                </div>
+
+                <!-- Экспорт -->
                 <div class="setting-item">
                     <div class="setting-info">
                         <span class="setting-title">Экспорт данных</span>
                         <span class="setting-desc">Скачать все заметки в JSON-файл</span>
                     </div>
-                    <button id="exportBtn" class="secondary-btn">Скачать</button>
+                    <button class="secondary-btn" id="exportBtn">Скачать</button>
                 </div>
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <span class="setting-title">Импорт данных</span>
-                        <span class="setting-desc">Загрузить заметки из файла</span>
-                    </div>
-                    <label class="file-upload-label secondary-btn" style="cursor: pointer;">
-                        Загрузить <input type="file" id="importFile" accept=".json" style="display: none;">
-                    </label>
-                </div>
+
+                <!-- Сброс данных -->
                 <div class="setting-item">
                     <div class="setting-info">
                         <span class="setting-title">Сброс данных</span>
                         <span class="setting-desc">Удалить все сохраненные задачи</span>
                     </div>
-                    <button id="resetDataBtn" class="danger-btn">Очистить всё</button>
+                    <button class="danger-btn" id="resetDataBtn">Очистить всё</button>
                 </div>
             </div>
         </div>
