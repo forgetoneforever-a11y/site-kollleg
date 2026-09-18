@@ -6,13 +6,16 @@
     <title>Календарь и Общая Заметка</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Полное скрытие стандартного курсора для всей страницы и элементов */
         *, html, body, button, input, textarea, a {
             cursor: none !important;
         }
     </style>
 </head>
 <body>
+
+    <!-- Кастомный курсор -->
+    <div class="custom-cursor" id="customCursor"></div>
+    <div class="cursor-dot" id="cursorDot"></div>
 
     <div class="app-container">
         <!-- Шапка приложения -->
@@ -23,12 +26,14 @@
             </div>
             <div class="app-controls">
                 <div class="status-indicator" title="Система активна"></div>
+                <!-- Кнопка открытия расписания -->
+                <button class="control-btn" id="openScheduleModalBtn" title="Расписание группы">📚</button>
                 <button class="control-btn" id="toggleAiChatBtn" title="ИИ Помощник">🤖</button>
                 <button class="control-btn" id="settingsBtn" title="Настройки">⚙️</button>
             </div>
         </header>
 
-        <!-- Основной контент: Сетка -->
+        <!-- Основной контент: Сетка (Календарь и Заметки на всю ширину) -->
         <div class="main-content-grid">
             <!-- Левая колонка: Календарь -->
             <div class="glass-panel calendar-card">
@@ -62,31 +67,33 @@
             </div>
         </div>
 
-        <!-- Нижняя часть: Расписание колледжа и Логи -->
-        <div class="main-content-grid">
-            <!-- Виджет расписания -->
-            <div class="glass-panel">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <h3 style="font-size: 15px; font-weight: 600;">📚 Расписание группы 211</h3>
-                    <label class="secondary-btn" style="cursor: none !important; display: inline-flex; align-items: center; gap: 4px;">
-                        📷 Скрин расписания
+        <!-- Нижний блок: только Системный лог на всю ширину -->
+        <div class="glass-panel system-log-panel">
+            <div class="log-header">
+                <span>Системный лог (Render & Telegram)</span>
+                <button class="text-btn" id="clearLogsBtn">Очистить</button>
+            </div>
+            <div class="log-content" id="logContent">
+                <div class="log-item info">[Система] Ожидание действий пользователя...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно РАСПИСАНИЯ -->
+    <div class="settings-modal-overlay" id="scheduleModal">
+        <div class="settings-modal-window" style="width: 600px; max-height: 85vh;">
+            <div class="settings-modal-header">
+                <h3>📚 Расписание группы 211</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label class="secondary-btn" style="cursor: none !important; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; font-size: 11px;">
+                        📷 Скрин
                         <input type="file" id="importScheduleImage" accept="image/*" style="display: none;">
                     </label>
-                </div>
-                <div id="scheduleViewContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
-                    <!-- Рендерится через JS -->
+                    <button class="settings-close-btn" id="closeScheduleModalBtn">✕</button>
                 </div>
             </div>
-
-            <!-- Системный лог / Консоль -->
-            <div class="glass-panel system-log-panel">
-                <div class="log-header">
-                    <span>Системный лог (Render & Telegram)</span>
-                    <button class="text-btn" id="clearLogsBtn">Очистить</button>
-                </div>
-                <div class="log-content" id="logContent">
-                    <div class="log-item info">[Система] Ожидание действий пользователя...</div>
-                </div>
+            <div class="settings-modal-body" id="scheduleViewContainer" style="max-height: 65vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px;">
+                <!-- Рендерится через JS -->
             </div>
         </div>
     </div>
