@@ -139,12 +139,19 @@ function renderNotesForSelectedDate() {
         return;
     }
 
-    tasks.forEach((task, index) => {
+    tasks.forEach((taskObj, index) => {
+        const text = typeof taskObj === 'object' ? taskObj.text : taskObj;
+        const time = typeof taskObj === 'object' && taskObj.time ? taskObj.time : '';
+        const sentTg = typeof taskObj === 'object' && taskObj.sentTg ? '🤖' : '';
+
         const row = document.createElement('div');
         row.className = 'note-row';
         row.innerHTML = `
-            <div class="note-top-line">
-                <span style="font-size: 13px;">${task}</span>
+            <div class="note-top-line" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    ${time ? `<span style="font-size: 11px; background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 6px; border-radius: 4px;">${time}</span>` : ''}
+                    <span style="font-size: 13px;">${text} ${sentTg}</span>
+                </div>
                 <button class="note-delete-btn" onclick="deleteTask('${selectedDateStr}', ${index})">Удалить</button>
             </div>
         `;
@@ -154,19 +161,36 @@ function renderNotesForSelectedDate() {
 
 function addNewTask() {
     const input = document.getElementById('noteInput');
+    const timeInput = document.getElementById('noteTimeInput');
+    const sendTgCheck = document.getElementById('sendToTgCheck');
+    
     if (!input) return;
     const text = input.value.trim();
     if (!text) return;
 
+    const timeVal = timeInput ? timeInput.value : '';
+    const shouldSendTg = sendTgCheck ? sendTgCheck.checked : false;
+
+    const newTask = {
+        text: text,
+        time: timeVal,
+        sentTg: shouldSendTg
+    };
+
     if (!notesData[selectedDateStr]) notesData[selectedDateStr] = [];
-    notesData[selectedDateStr].push(text);
+    notesData[selectedDateStr].push(newTask);
     localStorage.setItem('app_notes_data', JSON.stringify(notesData));
 
     input.value = '';
     renderCalendar();
     renderNotesForSelectedDate();
-    logToDebug(`Добавлена заметка на ${selectedDateStr}: "${text}"`, 'success');
-    sendNoteToTelegram(text, selectedDateStr);
+    
+    logToDebug(`Добавлена задача на ${selectedDateStr} (${timeVal || 'без времени'}): "${text}"`, 'success');
+
+    if (shouldSendTg) {
+        const fullText = timeVal ? `[⏰ ${timeVal}] ${text}` : text;
+        sendNoteToTelegram(fullText, selectedDateStr);
+    }
 }
 
 window.deleteTask = function(dateStr, index) {
@@ -184,7 +208,6 @@ const settingsModal = document.getElementById('settingsModal');
 document.getElementById('settingsBtn')?.addEventListener('click', () => settingsModal.classList.add('active'));
 document.getElementById('closeSettingsBtn')?.addEventListener('click', () => settingsModal.classList.remove('active'));
 
-// Экспорт в JSON
 document.getElementById('exportBtn')?.addEventListener('click', () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notesData, null, 2));
     const downloadAnchor = document.createElement('a');
@@ -196,7 +219,6 @@ document.getElementById('exportBtn')?.addEventListener('click', () => {
     logToDebug('Бэкап заметок успешно скачан!', 'success');
 });
 
-// Импорт из JSON
 document.getElementById('importFile')?.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -216,7 +238,6 @@ document.getElementById('importFile')?.addEventListener('change', (e) => {
     reader.readAsText(file);
 });
 
-// Сброс данных
 document.getElementById('resetDataBtn')?.addEventListener('click', () => {
     if (confirm("Точно удалить все заметки?")) {
         notesData = {};
@@ -240,7 +261,6 @@ function sendAiMessage() {
     const text = aiInput.value.trim();
     if (!text) return;
 
-    // Выводим сообщение пользователя в чат
     const userMsg = document.createElement('div');
     userMsg.className = 'ai-msg user';
     userMsg.textContent = text;
@@ -248,14 +268,12 @@ function sendAiMessage() {
     aiInput.value = '';
     aiMessages.scrollTop = aiMessages.scrollHeight;
 
-    // Имитация ответа с умным анализом текста
     setTimeout(() => {
         const botMsg = document.createElement('div');
         botMsg.className = 'ai-msg ai';
 
         const lowerText = text.toLowerCase();
 
-        // Проверяем, просит ли пользователь добавить заметку
         if (lowerText.includes('добавь заметку') || lowerText.includes('запиши') || lowerText.includes('напомни')) {
             let targetDateStr = selectedDateStr;
             
@@ -265,7 +283,6 @@ function sendAiMessage() {
                 targetDateStr = formatDateKey(new Date());
             }
 
-            // Выделяем текст задачи из сообщения
             let taskContent = text
                 .replace(/добавь заметку на.*?(сентября|октября|ноября|декабря|января|февраля|марта|апреля|мая|июня|июля|августа)/i, '')
                 .replace(/добавь заметку/i, '')
@@ -274,22 +291,25 @@ function sendAiMessage() {
 
             if (!taskContent) taskContent = text;
 
-            // Сохраняем в память
+            const newTask = {
+                text: taskContent,
+                time: '12:00',
+                sentTg: true
+            };
+
             if (!notesData[targetDateStr]) notesData[targetDateStr] = [];
-            notesData[targetDateStr].push(taskContent);
+            notesData[targetDateStr].push(newTask);
             localStorage.setItem('app_notes_data', JSON.stringify(notesData));
 
-            // Обновляем интерфейс
             renderCalendar();
             renderNotesForSelectedDate();
             
-            // Дублируем отправку на бэкенд Telegram
             sendNoteToTelegram(taskContent, targetDateStr);
 
-            botMsg.textContent = `Готово! 🎯 Я добавил заметку на ${targetDateStr}: "${taskContent}" и отправил её в Telegram.`;
+            botMsg.textContent = `Готово! 🎯 Я добавил задачу на ${targetDateStr}: "${taskContent}" и отправил её боту.`;
             logToDebug(`ИИ добавил задачу на ${targetDateStr}: ${taskContent}`, 'success');
         } else {
-            botMsg.textContent = `Я услышал тебя! Чтобы я добавил задачу в календарь, напиши: «Добавь заметку на [дата] [текст задачи]». 🚀`;
+            botMsg.textContent = `Я услышал тебя! Чтобы я добавил задачу, напиши: «Добавь заметку на [дата] [текст]». 🚀`;
         }
 
         aiMessages.appendChild(botMsg);
@@ -317,5 +337,5 @@ document.getElementById('clearLogsBtn')?.addEventListener('click', () => { docum
 document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderNotesForSelectedDate();
-    logToDebug('Система успешно инициализирована с AI и бэкапом.', 'success');
+    logToDebug('Система успешно инициализирована.', 'success');
 });
