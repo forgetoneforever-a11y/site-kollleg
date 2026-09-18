@@ -4,7 +4,6 @@
 let currentDate = new Date(); // Текущая дата (сентябрь 2026 по умолчанию для тестов)
 let selectedDateStr = formatDateKey(new Date());
 let notesData = JSON.parse(localStorage.getItem('app_notes')) || {};
-let logsData = [];
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
@@ -135,7 +134,7 @@ function renderSelectedDateNotes() {
                 <span style="font-size: 11px; color: var(--accent-color); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 6px;">${note.time || ''}</span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                <span style="font-size: 10px; color: var(--text-muted);">${note.sentToTg ? '✓ Отправлено в TG' локально : ''}</span>
+                <span style="font-size: 10px; color: var(--text-muted);">${note.sentToTg ? '✓ Отправлено в TG' : ''}</span>
                 <button class="note-delete-btn" onclick="deleteNote('${selectedDateStr}', ${index})">Удалить</button>
             </div>
         `;
@@ -251,6 +250,20 @@ function setupEventListeners() {
     document.getElementById('clearLogsBtn')?.addEventListener('click', () => {
         const logContent = document.getElementById('logContent');
         if (logContent) logContent.innerHTML = '';
+    });
+
+    // Модальное окно РАСПИСАНИЯ (кнопка 📚)
+    const scheduleModal = document.getElementById('scheduleModal');
+    document.getElementById('openScheduleModalBtn')?.addEventListener('click', () => {
+        scheduleModal?.classList.add('active');
+    });
+    document.getElementById('closeScheduleModalBtn')?.addEventListener('click', () => {
+        scheduleModal?.classList.remove('active');
+    });
+    scheduleModal?.addEventListener('click', (e) => {
+        if (e.target === scheduleModal) {
+            scheduleModal.classList.remove('active');
+        }
     });
 
     // Модальное окно Настроек
