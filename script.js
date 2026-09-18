@@ -1,11 +1,9 @@
 // Основной скрипт приложения: Календарь, Заметки, Расписание и ИИ
 
-// Состояние приложения
-let currentDate = new Date(); // Текущая дата (сентябрь 2026 по умолчанию для тестов)
+let currentDate = new Date();
 let selectedDateStr = formatDateKey(new Date());
 let notesData = JSON.parse(localStorage.getItem('app_notes')) || {};
 
-// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initCalendar();
@@ -15,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addLog('Система полностью инициализирована.', 'success');
 });
 
-// Форматирование даты в ключ YYYY-MM-DD
 function formatDateKey(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -23,7 +20,6 @@ function formatDateKey(date) {
     return `${year}-${month}-${day}`;
 }
 
-// Управление темами
 function initTheme() {
     const savedTheme = localStorage.getItem('app_theme') || 'default';
     if (savedTheme !== 'default') {
@@ -42,7 +38,6 @@ function updateThemeButtonsActive(themeName) {
     });
 }
 
-// Рендер календаря
 function initCalendar() {
     const grid = document.getElementById('calendarGrid');
     const title = document.getElementById('calendarMonthTitle');
@@ -59,7 +54,6 @@ function initCalendar() {
     ];
     title.textContent = `${monthsNames[month]} ${year}`;
 
-    // Шапка дней недели (Пн - Вс)
     const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
     daysOfWeek.forEach(day => {
         const headerEl = document.createElement('div');
@@ -68,18 +62,15 @@ function initCalendar() {
         grid.appendChild(headerEl);
     });
 
-    // Первый день месяца и общее количество дней
-    const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7; // Понедельник = 0
+    const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
     const totalDays = new Date(year, month + 1, 0).getDate();
 
-    // Пустые ячейки для смещения начала месяца
     for (let i = 0; i < firstDayIndex; i++) {
         const emptyCell = document.createElement('div');
         emptyCell.className = 'cal-cell-empty';
         grid.appendChild(emptyCell);
     }
 
-    // Дни месяца
     for (let day = 1; day <= totalDays; day++) {
         const cell = document.createElement('div');
         cell.className = 'cal-cell';
@@ -99,7 +90,7 @@ function initCalendar() {
 
         cell.addEventListener('click', () => {
             selectedDateStr = dateKey;
-            initCalendar(); // Перерисовка для смены активного класса
+            initCalendar();
             renderSelectedDateNotes();
         });
 
@@ -107,7 +98,6 @@ function initCalendar() {
     }
 }
 
-// Рендер заметок выбранного дня
 function renderSelectedDateNotes() {
     const subtitle = document.getElementById('selectedDateSubtitle');
     const list = document.getElementById('notesList');
@@ -142,7 +132,6 @@ function renderSelectedDateNotes() {
     });
 }
 
-// Добавление новой заметки
 function addNewNote() {
     const input = document.getElementById('noteInput');
     const timeInput = document.getElementById('noteTimeInput');
@@ -175,7 +164,6 @@ function addNewNote() {
     }
 }
 
-// Удаление заметки
 window.deleteNote = function(dateKey, index) {
     if (!notesData[dateKey]) return;
     notesData[dateKey].splice(index, 1);
@@ -188,7 +176,6 @@ window.deleteNote = function(dateKey, index) {
     addLog(`Задача удалена из расписания.`, 'info');
 };
 
-// Рендер расписания группы 211
 function renderSchedule() {
     const container = document.getElementById('scheduleViewContainer');
     if (!container) return;
@@ -213,7 +200,6 @@ function renderSchedule() {
     });
 }
 
-// Системный лог
 function addLog(text, type = 'info') {
     const logContent = document.getElementById('logContent');
     if (!logContent) return;
@@ -227,9 +213,7 @@ function addLog(text, type = 'info') {
     logContent.scrollTop = logContent.scrollHeight;
 }
 
-// Настройка всех обработчиков событий
 function setupEventListeners() {
-    // Навигация по месяцам
     document.getElementById('prevMonthBtn')?.addEventListener('click', () => {
         currentDate.setMonth(currentDate.getMonth() - 1);
         initCalendar();
@@ -240,19 +224,17 @@ function setupEventListeners() {
         initCalendar();
     });
 
-    // Кнопка добавления заметки
     document.getElementById('addNoteBtn')?.addEventListener('click', addNewNote);
     document.getElementById('noteInput')?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') addNewNote();
     });
 
-    // Очистка логов
     document.getElementById('clearLogsBtn')?.addEventListener('click', () => {
         const logContent = document.getElementById('logContent');
         if (logContent) logContent.innerHTML = '';
     });
 
-    // Модальное окно РАСПИСАНИЯ (кнопка 📚)
+    // Модальное окно РАСПИСАНИЯ
     const scheduleModal = document.getElementById('scheduleModal');
     document.getElementById('openScheduleModalBtn')?.addEventListener('click', () => {
         scheduleModal?.classList.add('active');
@@ -274,7 +256,6 @@ function setupEventListeners() {
         if (e.target === settingsModal) settingsModal.classList.remove('active');
     });
 
-    // Выбор тем
     document.querySelectorAll('.theme-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const theme = btn.getAttribute('data-theme');
@@ -290,7 +271,6 @@ function setupEventListeners() {
         });
     });
 
-    // Экспорт данных
     document.getElementById('exportBtn')?.addEventListener('click', () => {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notesData, null, 2));
         const downloadAnchor = document.createElement('a');
@@ -302,7 +282,6 @@ function setupEventListeners() {
         addLog('Экспорт заметок в JSON выполнен успешно.', 'success');
     });
 
-    // Сброс данных
     document.getElementById('resetDataBtn')?.addEventListener('click', () => {
         if (confirm('Удалить все сохраненные задачи?')) {
             notesData = {};
@@ -326,7 +305,6 @@ function setupEventListeners() {
         const text = aiChatInput?.value.trim();
         if (!text) return;
 
-        // Сообщение пользователя
         const userMsg = document.createElement('div');
         userMsg.className = 'ai-msg user';
         userMsg.textContent = text;
@@ -336,7 +314,6 @@ function setupEventListeners() {
 
         addLog(`[AI Assistant] Обработка запроса: "${text}"`, 'info');
 
-        // Имитация ответа ИИ
         setTimeout(() => {
             const aiMsg = document.createElement('div');
             aiMsg.className = 'ai-msg ai';
@@ -352,19 +329,20 @@ function setupEventListeners() {
         if (e.key === 'Enter') handleAiSend();
     });
 
-    // Кастомный курсор движение
+    // Кастомный курсор движение (исправленное)
     const cursor = document.getElementById('customCursor');
     const dot = document.getElementById('cursorDot');
     
     document.addEventListener('mousemove', (e) => {
         if (cursor && dot) {
-            cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-            dot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+            cursor.style.left = `${e.clientX}px`;
+            cursor.style.top = `${e.clientY}px`;
+            dot.style.left = `${e.clientX}px`;
+            dot.style.top = `${e.clientY}px`;
         }
     });
 }
 
-// Защита от HTML инъекций
 function escapeHtml(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
