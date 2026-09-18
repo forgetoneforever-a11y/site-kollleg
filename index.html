@@ -26,14 +26,14 @@
             </div>
             <div class="app-controls">
                 <div class="status-indicator" title="Система активна"></div>
-                <!-- Кнопка открытия расписания -->
-                <button class="control-btn" id="openScheduleModalBtn" title="Расписание группы">📚</button>
+                <!-- Кнопка расписания с текстом -->
+                <button class="control-btn" id="openScheduleModalBtn" title="Расписание группы" style="width: auto; padding: 0 12px; gap: 6px; font-size: 12px; display: flex; align-items: center;">📚 Расписание</button>
                 <button class="control-btn" id="toggleAiChatBtn" title="ИИ Помощник">🤖</button>
                 <button class="control-btn" id="settingsBtn" title="Настройки">⚙️</button>
             </div>
         </header>
 
-        <!-- Основной контент: Сетка (Календарь и Заметки на всю ширину) -->
+        <!-- Основной контент: Сетка (Календарь и Заметки) -->
         <div class="main-content-grid">
             <!-- Левая колонка: Календарь -->
             <div class="glass-panel calendar-card">
@@ -67,7 +67,7 @@
             </div>
         </div>
 
-        <!-- Нижний блок: только Системный лог на всю ширину -->
+        <!-- Нижний блок: Системный лог -->
         <div class="glass-panel system-log-panel">
             <div class="log-header">
                 <span>Системный лог (Render & Telegram)</span>
