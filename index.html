@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь и Медиа-Заметки</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Кастомный курсор -->
+    <div class="custom-cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <div class="app-container">
+        <!-- Шапка приложения -->
+        <header class="app-header">
+            <div class="app-title-area">
+                <h2>📅 Календарь и Медиа-Заметки</h2>
+                <span class="app-subtitle">Синхронизировано с LocalStorage</span>
+            </div>
+            <div class="app-controls">
+                <span class="status-indicator" title="Статус системы"></span>
+                <button class="control-btn" id="aiToggleBtn" title="AI Ассистент">💬</button>
+                <button class="control-btn" id="settingsBtn" title="Настройки">⚙️</button>
+            </div>
+        </header>
+
+        <!-- Основной контент: Календарь слева, Заметки справа -->
+        <div class="main-content-grid">
+            
+            <!-- Левая колонка: Календарь -->
+            <div class="calendar-card glass-panel">
+                <div class="calendar-nav">
+                    <button class="nav-btn" id="prevMonthBtn">◀</button>
+                    <h3 id="currentMonthLabel">Сентябрь 2026</h3>
+                    <button class="nav-btn" id="nextMonthBtn">▶</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Дни недели и сетка генерируются через JS -->
+                </div>
+            </div>
+
+            <!-- Правая колонка: Заметки на выбранный день -->
+            <div class="notes-card glass-panel">
+                <div class="notes-header">
+                    <h3 id="selectedDateTitle">Заметки на выбранный день</h3>
+                    <span class="task-counter" id="taskCounter">0/0 выполнено</span>
+                </div>
+                <div class="notes-input-area">
+                    <input type="text" id="taskInput" placeholder="Новая задача или заметка...">
+                    <button class="primary-btn" id="addTaskBtn">⚡</button>
+                </div>
+                <div class="notes-list" id="selectedDayNotes">
+                    <!-- Заметки рендерятся здесь -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Системный лог снизу -->
+        <div class="system-log-panel glass-panel">
+            <div class="log-header">
+                <span>Системный лог</span>
+                <button class="text-btn" id="clearLogsBtn">Очистить</button>
+            </div>
+            <div class="log-content" id="logContent">
+                <!-- Логи -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Плавающий AI Ассистент -->
+    <div class="ai-chat-window" id="aiChatWindow">
+        <div class="ai-chat-header">
+            <div class="ai-chat-title">
+                <span class="ai-status-dot"></span>
+                <span>AI Ассистент (ДЗ и Заметки)</span>
+            </div>
+            <button class="ai-close-btn" id="aiCloseBtn">✕</button>
+        </div>
+        <div class="ai-chat-messages" id="aiChatMessages">
+            <div class="ai-msg ai">
+                Привет! Напиши мне, например: <b>«Закинь на 20 сентября сделать лабораторную»</b>, и я автоматически добавлю это в твои заметки! 🚀
+            </div>
+        </div>
+        <div class="ai-chat-input-area">
+            <input type="text" id="aiChatInput" placeholder="Например: На 21.09 сдать чертеж...">
+            <button class="primary-btn" id="aiSendBtn">OK</button>
+        </div>
+    </div>
+
+    <!-- Кнопка вызова чата, если он свернут (опционально) -->
+    <button class="ai-floating-trigger" id="aiHeaderBtn" style="display: none;">💬 AI Ассистент</button>
+
+    <!-- Модальное окно расширенных настроек -->
+    <div class="settings-modal-overlay" id="settingsModal">
+        <div class="settings-modal-window">
+            <div class="settings-modal-header">
+                <h3>⚙️ Настройки приложения</h3>
+                <button class="settings-close-btn" id="settingsCloseBtn">✕</button>
+            </div>
+            <div class="settings-modal-body">
+                
+                <!-- Настройка 1: Начало недели -->
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-title">Начало недели</span>
+                        <span class="setting-desc">Какой день считать первым в календаре</span>
+                    </div>
+                    <select id="startWeekDaySelect" class="setting-select">
+                        <option value="monday">Понедельник</option>
+                        <option value="sunday">Воскресенье</option>
+                    </select>
+                </div>
+
+                <!-- Настройка 2: Экспорт данных -->
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-title">Экспорт заметок</span>
+                        <span class="setting-desc">Скачать все задачи в JSON-файл</span>
+                    </div>
+                    <button class="secondary-btn" id="exportDataBtn">Скачать</button>
+                </div>
+
+                <!-- Настройка 3: Импорт данных -->
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-title">Импорт заметок</span>
+                        <span class="setting-desc">Загрузить задачи из файла</span>
+                    </div>
+                    <label class="secondary-btn file-upload-label">
+                        Выбрать файл <input type="file" id="importFileBtn" accept=".json" style="display: none;">
+                    </label>
+                </div>
+
+                <!-- Настройка 4: Сброс данных -->
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-title">Очистить все данные</span>
+                        <span class="setting-desc">Удалит все сохраненные заметки из LocalStorage</span>
+                    </div>
+                    <button class="danger-btn" id="clearAllDataBtn">Сбросить</button>
+                </div>
+
+                <div class="setting-item" style="border: none; background: transparent; padding: 4px 0;">
+                    <span class="setting-desc" style="text-align: center; width: 100%;">Calendar & Notes v1.3.0 (Advanced Edition)</span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
