@@ -10,6 +10,27 @@
     --success-color: #10b981;
 }
 
+/* Кастомные темы */
+body[data-theme="purple"] {
+    --accent-color: #8b5cf6;
+    --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+}
+
+body[data-theme="green"] {
+    --accent-color: #10b981;
+    --accent-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
+}
+
+body[data-theme="sunset"] {
+    --accent-color: #f97316;
+    --accent-gradient: linear-gradient(135deg, #f97316 0%, #c2410c 100%);
+}
+
+body[data-theme="pink"] {
+    --accent-color: #ec4899;
+    --accent-gradient: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -204,7 +225,8 @@ body.hovered .custom-cursor {
     background: var(--accent-gradient);
     color: #fff;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 4px 12px var(--accent-color);
+    opacity: 0.85;
 }
 
 .cal-cell.has-note::after {
@@ -332,7 +354,7 @@ body.hovered .custom-cursor {
     color: var(--danger-color);
 }
 
-/* Панель расписания колледжа */
+/* Расписание колледжа */
 .schedule-day-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.07);
@@ -343,7 +365,7 @@ body.hovered .custom-cursor {
 .schedule-day-title {
     font-size: 12px;
     font-weight: 600;
-    color: #60a5fa;
+    color: var(--accent-color);
     margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -408,7 +430,7 @@ body.hovered .custom-cursor {
     height: 460px;
     background: rgba(13, 18, 30, 0.95);
     backdrop-filter: blur(16px);
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    border: 1px solid var(--accent-color);
     border-radius: 16px;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
     display: flex;
@@ -528,7 +550,7 @@ body.hovered .custom-cursor {
 }
 
 .settings-modal-window {
-    width: 400px;
+    width: 420px;
     background: #111827;
     border: 1px solid var(--panel-border);
     border-radius: 16px;
@@ -587,6 +609,28 @@ body.hovered .custom-cursor {
 .setting-desc {
     font-size: 11px;
     color: var(--text-muted);
+}
+
+.theme-options {
+    display: flex;
+    gap: 6px;
+}
+
+.theme-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.theme-btn:hover {
+    transform: scale(1.15);
+}
+
+.theme-btn.active {
+    border-color: #fff;
 }
 
 .secondary-btn {
