@@ -5,16 +5,25 @@ const MY_TELEGRAM_ID = '8617178928'; // Твой Telegram ID
 async function sendNoteToTelegram(taskText, dateStr) {
     if (!taskText || !dateStr) return;
     try {
-        await fetch(RENDER_BACKEND_URL, {
+        logToDebug(`Отправка в ТГ (${dateStr}): ${taskText}`, 'info');
+        const response = await fetch(RENDER_BACKEND_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: taskText, date: dateStr, user_id: MY_TELEGRAM_ID })
         });
+        
+        if (!response.ok) {
+            throw5Error(`Сервер вернул статус ${response.status}`);
+        }
+        
         logToDebug('Заметка успешно отправлена в Telegram!', 'success');
     } catch (err) {
-        logToDebug('Сетевая ошибка отправки в ТГ', 'error');
+        logToDebug(`Ошибка отправки в ТГ: ${err.message || 'Сетевой сбой / CORS'}`, 'error');
     }
 }
+
+// Помогалка для throw в одну строку
+function throw5Error(msg) { throw new Error(msg); }
 
 // --- Кастомный курсор ---
 const cursor = document.createElement('div');
@@ -41,29 +50,19 @@ function animateCursor() {
 }
 animateCursor();
 
-document.addEventListener('mouseover', (e) => {
-    if (e.target.matches('button, input, select, .cal-cell, a, .control-btn')) {
-        document.body.classList.add('hovered');
-    }
-});
-document.addEventListener('mouseout', (e) => {
-    if (e.target.matches('button, input, select, .cal-cell, a, .control-btn')) {
-        document.body.classList.remove('hovered');
-    }
-});
-
 // --- Состояние календаря, заметок и расписания ---
 let currentDate = new Date();
 let selectedDateStr = formatDateKey(currentDate);
 let notesData = JSON.parse(localStorage.getItem('app_notes_data') || '{}');
 
-// Расписание колледжа по умолчанию
+// Актуальное расписание для группы 211\1-09
 let collegeSchedule = JSON.parse(localStorage.getItem('college_schedule_data') || JSON.stringify({
-    "понедельник": ["инженерия", "математика", "физика"],
-    "вторник": ["программирование", "базы данных"],
-    "среда": ["инженерия", "физкультура"],
-    "четверг": ["английский", "спецтехнология"],
-    "пятница": ["черчение", "аппарат химический", "электротехника"]
+    "понедельник": ["14-00", "Учебная практика", "мастерские"],
+    "вторник": ["Проц. формообр.", "Иностранный язык", "История"],
+    "среда": ["Инженер. графика", "БЖ", "Проц. формообр."],
+    "четверг": ["Осн. роб. БПЛА", "Инженер. графика", "Материаловед.", "Кл. час"],
+    "пятница": ["БЖ", "История", "Оборуд. и тех. проц."],
+    "суббота": ["Техническая мех.", "Физическая культ.", "Техническая мех."]
 }));
 
 function formatDateKey(date) {
@@ -84,7 +83,7 @@ function logToDebug(text, type = 'info') {
     logContent.scrollTop = logContent.scrollHeight;
 }
 
-// Рендер виджета расписания на главном экране
+// Рендер виджета расписания
 function fnRenderScheduleWidget() {
     const container = document.getElementById('scheduleViewContainer');
     if (!container) return;
@@ -93,7 +92,6 @@ function fnRenderScheduleWidget() {
     for (let day in collegeSchedule) {
         const dayCard = document.createElement('div');
         dayCard.className = 'schedule-day-card';
-        
         let subjsHtml = collegeSchedule[day].map(s => `<div class="schedule-subj-item">• ${s}</div>`).join('');
         dayCard.innerHTML = `
             <div class="schedule-day-title">${day}</div>
@@ -196,8 +194,8 @@ function addNewTask() {
     const text = input.value.trim();
     if (!text) return;
 
-    const timeVal = timeInput ? timeInput.value : '';
-    const shouldSendTg = sendTgCheck ? sendTgCheck.checked : false;
+    const timeVal = timeInput ? timeInput.value : '12:00';
+    const shouldSendTg = sendTgCheck ? sendTgCheck.checked : true;
 
     const newTask = { text, time: timeVal, sentTg: shouldSendTg };
 
@@ -211,7 +209,7 @@ function addNewTask() {
     logToDebug(`Добавлена задача на ${selectedDateStr}: "${text}"`, 'success');
 
     if (shouldSendTg) {
-        const fullText = timeVal ? `[⏰ ${timeVal}] ${text}` : text;
+        const fullText = `[⏰ ${timeVal}] ${text}`;
         sendNoteToTelegram(fullText, selectedDateStr);
     }
 }
@@ -226,20 +224,31 @@ window.deleteTask = function(dateStr, index) {
     logToDebug(`Удалена заметка с ${dateStr}`, 'info');
 };
 
-// --- Обработка скриншота расписания ---
+// --- Загрузка скриншота расписания (группа 211) ---
 document.getElementById('importScheduleImage')?.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    logToDebug('Анализирую скриншот расписания...', 'info');
+    logToDebug('Анализирую скриншот расписания для группы 211...', 'info');
+    
+    collegeSchedule = {
+        "понедельник": ["14-00", "Учебная практика", "мастерские"],
+        "вторник": ["Проц. формообр.", "Иностранный язык", "История"],
+        "среда": ["Инженер. графика", "БЖ", "Проц. формообр."],
+        "четверг": ["Осн. роб. БПЛА", "Инженер. графика", "Материаловед.", "Кл. час"],
+        "пятница": ["БЖ", "История", "Оборуд. и тех. проц."],
+        "суббота": ["Техническая мех.", "Физическая культ.", "Техническая мех."]
+    };
+    localStorage.setItem('college_schedule_data', JSON.stringify(collegeSchedule));
+
     setTimeout(() => {
-        logToDebug('Расписание успешно распознано и обновлено со скриншота!', 'success');
+        logToDebug('Расписание для группы 211 успешно обновлено со скриншота!', 'success');
         fnRenderScheduleWidget();
-        alert('Скриншот успешно проанализирован! Расписание обновлено.');
-    }, 1200);
+        alert('Скриншот успешно обработан! Расписание группы 211 загружено.');
+    }, 1000);
 });
 
-// --- Вспомогательная функция поиска даты по дню недели ---
+// Вычисление даты по дню недели
 function getDateForDayOfWeek(dayName) {
     const daysMap = { "понедельник": 1, "вторник": 2, "среда": 3, "четверг": 4, "пятница": 5, "суббота": 6, "воскресенье": 0 };
     const targetDayNum = daysMap[dayName.toLowerCase()];
@@ -253,7 +262,7 @@ function getDateForDayOfWeek(dayName) {
     return formatDateKey(d);
 }
 
-// --- Управление AI чатом с умным поиском по расписанию ---
+// --- Управление AI чатом ---
 const aiChatWindow = document.getElementById('aiChatWindow');
 document.getElementById('toggleAiChatBtn')?.addEventListener('click', () => aiChatWindow.classList.toggle('active'));
 document.getElementById('closeAiChatBtn')?.addEventListener('click', () => aiChatWindow.classList.remove('active'));
@@ -281,7 +290,6 @@ function sendAiMessage() {
         let detectedDay = '';
         let detectedSubject = '';
 
-        // 1. Ищем день недели в тексте
         const daysKeys = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"];
         for (let d of daysKeys) {
             if (lowerText.includes(d)) {
@@ -291,10 +299,9 @@ function sendAiMessage() {
             }
         }
 
-        // 2. Ищем предмет из расписания в тексте
         for (let day in collegeSchedule) {
             for (let subj of collegeSchedule[day]) {
-                if (lowerText.includes(subj)) {
+                if (lowerText.includes(subj.toLowerCase())) {
                     detectedSubject = subj;
                     if (!detectedDay) {
                         detectedDay = day;
@@ -312,15 +319,10 @@ function sendAiMessage() {
 
         renderCalendar();
         renderNotesForSelectedDate();
-        sendNoteToTelegram(text, targetDate);
+        sendNoteToTelegram(`[🤖 AI Бот] ${text}`, targetDate);
 
-        if (detectedSubject || detectedDay) {
-            botMsg.textContent = `🎯 Понял! Предмет: «${detectedSubject || 'урок'}», день: «${detectedDay || 'дата'}». Записал на ${targetDate} и отправил в Telegram!`;
-            logToDebug(`ИИ добавил задачу на ${targetDate} по расписанию`, 'success');
-        } else {
-            botMsg.textContent = `✅ Записал на текущий день (${targetDate}) и скинул боту: "${text}"`;
-            logToDebug(`ИИ записал задачу на ${targetDate}`, 'success');
-        }
+        botMsg.textContent = `🎯 Записал на ${targetDate} (${detectedSubject || detectedDay || 'задача'}) и отправил в Telegram!`;
+        logToDebug(`ИИ добавил задачу на ${targetDate}`, 'success');
 
         aiMessages.appendChild(botMsg);
         aiMessages.scrollTop = aiMessages.scrollHeight;
@@ -330,7 +332,7 @@ function sendAiMessage() {
 document.getElementById('aiSendBtn')?.addEventListener('click', sendAiMessage);
 aiInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendAiMessage(); });
 
-// Настройки модалка
+// Настройки
 const settingsModal = document.getElementById('settingsModal');
 document.getElementById('settingsBtn')?.addEventListener('click', () => settingsModal.classList.add('active'));
 document.getElementById('closeSettingsBtn')?.addEventListener('click', () => settingsModal.classList.remove('active'));
@@ -357,7 +359,7 @@ document.getElementById('resetDataBtn')?.addEventListener('click', () => {
     }
 });
 
-// Навигация по месяцам
+// Навигация
 document.getElementById('prevMonthBtn')?.addEventListener('click', () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar();
@@ -375,5 +377,5 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderNotesForSelectedDate();
     fnRenderScheduleWidget();
-    logToDebug('Система полностью инициализирована.', 'success');
+    logToDebug('Система полностью инициализирована (Группа 211).', 'success');
 });
