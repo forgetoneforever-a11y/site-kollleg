@@ -4,1038 +4,594 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Календарь и Общая Заметка</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Базовые стили и переменные темы */
-        :root {
-            --bg-main: #0b0f19;
-            --panel-bg: rgba(17, 24, 39, 0.75);
-            --panel-border: rgba(255, 255, 255, 0.08);
-            --accent-color: #3b82f6;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
+        /* Общие сбросы и стили */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            /* Отключаем стандартный курсор на всем сайте, если используется кастомный */
+            cursor: none !important;
         }
 
-        [data-theme="purple"] { --accent-color: #8b5cf6; }
-        [data-theme="green"] { --accent-color: #10b981; }
-        [data-theme="sunset"] { --accent-color: #f97316; }
-        [data-theme="pink"] { --accent-color: #ec4899; }
-
-        *, html, body, button, input, textarea, a {
-            cursor: none !important;
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-x: hidden;
         }
 
         /* Кастомный курсор */
         .custom-cursor {
             position: fixed;
-            width: 24px;
-            height: 24px;
-            border: 1px solid rgba(59, 130, 246, 0.5);
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            background: rgba(88, 166, 255, 0.8);
             border-radius: 50%;
             pointer-events: none;
             transform: translate(-50%, -50%);
-            z-index: 99999;
-            transition: width 0.1s, height 0.1s;
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            z-index: 9999;
+            box-shadow: 0 0 10px rgba(88, 166, 255, 0.5);
         }
 
-        .cursor-dot {
-            position: fixed;
-            width: 6px;
-            height: 6px;
-            background-color: var(--accent-color);
-            border-radius: 50%;
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-            z-index: 100000;
+        /* Увеличение курсора при наведении на интерактивные элементы */
+        body.cursor-hover .custom-cursor {
+            width: 36px;
+            height: 36px;
+            background: rgba(88, 166, 255, 0.4);
+            border: 2px solid #58a6ff;
         }
 
-        body {
-            margin: 0;
-            padding: 20px;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-
-        .app-container {
-            max-width: 1200px;
-            margin: 0 auto;
+        /* Шапка приложения */
+        header {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 16px 24px;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
             gap: 16px;
         }
 
-        .glass-panel {
-            background: var(--panel-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--panel-border);
-            border-radius: 16px;
-            padding: 20px;
+        .app-icon {
+            font-size: 28px;
         }
 
-        /* Шапка */
-        .app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 24px;
-        }
-
-        .app-title-area h2 {
-            margin: 0;
+        .app-title h1 {
             font-size: 18px;
+            font-weight: 600;
+            color: #f0f6fc;
         }
 
-        .app-subtitle {
-            font-size: 12px;
-            color: var(--text-muted);
+        .app-title p {
+            font-size: 13px;
+            color: #8b949e;
             margin-top: 2px;
         }
 
-        .app-controls {
+        .header-right {
             display: flex;
             align-items: center;
-            gap: 12px;
-        }
-
-        .control-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--panel-border);
-            color: var(--text-main);
-            padding: 10px 16px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s, border-color 0.2s;
-        }
-
-        .control-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--accent-color);
-        }
-
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            background-color: #10b981;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #10b981;
-        }
-
-        /* Сетка контента */
-        .main-content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
             gap: 16px;
         }
 
-        @media (max-width: 768px) {
-            .main-content-grid {
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #238636;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #238636;
+        }
+
+        /* Увеличенные и яркие кнопки Расписание и ИИ Чат */
+        .action-btn {
+            background: linear-gradient(135deg, #238636, #2ea043);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(35, 134, 54, 0.3);
+        }
+
+        .action-btn:hover {
+            background: linear-gradient(135deg, #2ea043, #3fb950);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(35, 134, 54, 0.4);
+        }
+
+        .ai-btn {
+            background: linear-gradient(135deg, #1f6feb, #388bfd);
+            box-shadow: 0 4px 12px rgba(31, 111, 235, 0.3);
+        }
+
+        .ai-btn:hover {
+            background: linear-gradient(135deg, #388bfd, #58a6ff);
+            box-shadow: 0 6px 16px rgba(31, 111, 235, 0.4);
+        }
+
+        .icon-btn {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: #30363d;
+            border-color: #8b949e;
+        }
+
+        /* Основной контент */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
                 grid-template-columns: 1fr;
             }
         }
 
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 24px;
+        }
+
         /* Календарь */
-        .calendar-nav {
+        .calendar-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            justify-content: space-between;
+            margin-bottom: 20px;
         }
 
-        .calendar-nav h3 {
-            margin: 0;
+        .calendar-header h2 {
             font-size: 16px;
+            font-weight: 600;
+            color: #f0f6fc;
         }
 
-        .nav-btn {
-            background: transparent;
-            border: 1px solid var(--panel-border);
-            color: var(--text-main);
-            padding: 6px 12px;
-            border-radius: 8px;
+        .nav-arrow {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: background 0.2s;
         }
 
-        .calendar-grid {
+        .nav-arrow:hover {
+            background: #30363d;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: #8b949e;
+            margin-bottom: 12px;
+        }
+
+        .days-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 6px;
-            text-align: center;
         }
 
-        .cal-day-header {
-            font-size: 11px;
-            color: var(--text-muted);
-            padding-bottom: 6px;
-        }
-
-        .cal-cell {
-            padding: 10px 0;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--panel-border);
+        .day-cell {
+            aspect-ratio: 1;
+            background: #21262d;
+            border: 1px solid #30363d;
             border-radius: 8px;
-            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #c9d1d9;
             transition: all 0.2s;
+            position: relative;
         }
 
-        .cal-cell:hover {
-            background: rgba(255, 255, 255, 0.06);
+        .day-cell:hover {
+            background: #30363d;
+            border-color: #8b949e;
         }
 
-        .cal-cell.active {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
-            color: #fff;
+        .day-cell.selected {
+            background: #1f6feb;
+            border-color: #388bfd;
+            color: #ffffff;
+            font-weight: 600;
         }
 
-        .cal-cell.has-note::after {
+        .day-cell.has-note::after {
             content: '';
-            display: block;
+            position: absolute;
+            bottom: 6px;
             width: 4px;
             height: 4px;
-            background: var(--accent-color);
+            background-color: #58a6ff;
             border-radius: 50%;
-            margin: 2px auto 0;
         }
 
-        .cal-cell.active.has-note::after {
-            background: #fff;
-        }
-
-        .cal-cell-empty {
-            visibility: hidden;
+        .day-cell.selected.has-note::after {
+            background-color: #ffffff;
         }
 
         /* Заметки */
-        .notes-header {
+        .notes-section h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f0f6fc;
+            margin-bottom: 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
         }
 
-        .notes-header h3 {
-            margin: 0;
-            font-size: 16px;
+        .notes-section h2 span {
+            font-size: 13px;
+            color: #8b949e;
+            font-weight: 400;
         }
 
-        .task-counter {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-
-        .notes-input-area {
+        .note-input-group {
             display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
-        .notes-input-area input[type="text"] {
+        .note-input {
             flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--panel-border);
-            border-radius: 10px;
-            padding: 8px 12px;
-            color: var(--text-main);
-            font-size: 13px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #c9d1d9;
+            font-size: 14px;
             outline: none;
+            transition: border-color 0.2s;
         }
 
-        .primary-btn {
-            background: var(--accent-color);
+        .note-input:focus {
+            border-color: #58a6ff;
+        }
+
+        .time-picker {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 0 12px;
+            color: #c9d1d9;
+            font-size: 14px;
+            outline: none;
+            width: 100px;
+        }
+
+        .add-note-btn {
+            background: #238636;
+            color: #ffffff;
             border: none;
-            color: #fff;
             padding: 0 16px;
-            border-radius: 10px;
-            font-weight: 500;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .add-note-btn:hover {
+            background: #2ea043;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
             font-size: 13px;
+            color: #8b949e;
+        }
+
+        .checkbox-group input {
+            accent-color: #1f6feb;
+            width: 16px;
+            height: 16px;
         }
 
         .notes-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            max-height: 220px;
+            gap: 10px;
+            max-height: 250px;
             overflow-y: auto;
-            padding-right: 4px;
         }
 
-        .note-row {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--panel-border);
-            border-radius: 10px;
-            padding: 10px 12px;
+        .note-item {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .note-delete-btn {
+        .note-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .note-text {
+            font-size: 14px;
+            color: #f0f6fc;
+        }
+
+        .note-meta {
+            font-size: 12px;
+            color: #8b949e;
+            display: flex;
+            gap: 12px;
+        }
+
+        .delete-note {
             background: transparent;
             border: none;
-            color: #ef4444;
-            font-size: 11px;
-            padding: 0;
+            color: #f85149;
+            font-size: 13px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .delete-note:hover {
+            opacity: 0.8;
         }
 
         /* Системный лог */
-        .system-log-panel {
-            display: flex;
-            flex-direction: column;
+        .log-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 20px 24px;
         }
 
         .log-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #8b949e;
         }
 
-        .text-btn {
+        .clear-log {
             background: transparent;
             border: none;
-            color: var(--text-muted);
-            font-size: 11px;
+            color: #8b949e;
+            font-size: 13px;
+            transition: color 0.2s;
         }
 
-        .log-content {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--panel-border);
-            border-radius: 10px;
-            padding: 12px;
-            height: 100px;
-            overflow-y: auto;
+        .clear-log:hover {
+            color: #f0f6fc;
+        }
+
+        .log-box {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 14px;
             font-family: monospace;
-            font-size: 11px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .log-item.success { color: #10b981; }
-        .log-item.info { color: #60a5fa; }
-        .log-item.error { color: #ef4444; }
-
-        /* Модальные окна */
-        .settings-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-            z-index: 1000;
-        }
-
-        .settings-modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .settings-modal-window {
-            background: var(--bg-main);
-            border: 1px solid var(--panel-border);
-            border-radius: 16px;
-            width: 420px;
-            padding: 24px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-        }
-
-        .settings-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .settings-modal-header h3 {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .settings-close-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-size: 16px;
-        }
-
-        .settings-modal-body {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .setting-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .setting-title {
             font-size: 13px;
-            font-weight: 500;
-        }
-
-        .setting-desc {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-
-        .theme-options {
+            height: 120px;
+            overflow-y: auto;
             display: flex;
+            flex-direction: column;
             gap: 6px;
         }
 
-        .theme-btn {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-        }
-
-        .theme-btn.active {
-            border-color: #fff;
-        }
-
-        .secondary-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--panel-border);
-            color: var(--text-main);
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-        }
-
-        .danger-btn {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-        }
-
-        /* Расписание карточки */
-        .schedule-day-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--panel-border);
-            border-radius: 10px;
-            padding: 12px;
-        }
-
-        .schedule-day-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--accent-color);
-            margin-bottom: 6px;
-        }
-
-        .schedule-subj-item {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-left: 8px;
-            margin-top: 2px;
-        }
-
-        /* AI Чат окна */
-        .ai-chat-window {
-            position: fixed;
-            bottom: 20px; right: 20px;
-            width: 340px; height: 420px;
-            background: var(--bg-main);
-            border: 1px solid var(--panel-border);
-            border-radius: 16px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            transform: translateY(20px);
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.2s;
-            z-index: 999;
-        }
-
-        .ai-chat-window.active {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .ai-chat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--panel-border);
-        }
-
-        .ai-chat-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .ai-status-dot {
-            width: 6px; height: 6px;
-            background: var(--accent-color);
-            border-radius: 50%;
-        }
-
-        .ai-close-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-        }
-
-        .ai-chat-messages {
-            flex: 1;
-            padding: 12px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            font-size: 12px;
-        }
-
-        .ai-msg {
-            padding: 8px 12px;
-            border-radius: 10px;
-            max-width: 80%;
-            line-height: 1.4;
-        }
-
-        .ai-msg.ai {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--panel-border);
-            align-self: flex-start;
-        }
-
-        .ai-msg.user {
-            background: var(--accent-color);
-            color: #fff;
-            align-self: flex-end;
-        }
-
-        .ai-chat-input-area {
-            padding: 12px;
-            border-top: 1px solid var(--panel-border);
-            display: flex;
-            gap: 8px;
-        }
-
-        .ai-chat-input-area input {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--panel-border);
-            border-radius: 8px;
-            padding: 6px 10px;
-            color: var(--text-main);
-            font-size: 12px;
-            outline: none;
-        }
+        .log-system { color: #58a6ff; }
+        .log-time { color: #3fb950; }
     </style>
 </head>
 <body>
 
     <!-- Кастомный курсор -->
     <div class="custom-cursor" id="customCursor"></div>
-    <div class="cursor-dot" id="cursorDot"></div>
 
-    <div class="app-container">
-        <!-- Шапка приложения -->
-        <header class="app-header glass-panel">
-            <div class="app-title-area">
-                <h2>🗓️ Календарь и Общая Заметка</h2>
-                <div class="app-subtitle">Группа 211 • Технология машиностроения</div>
+    <!-- Шапка -->
+    <header>
+        <div class="header-left">
+            <div class="app-icon">📅</div>
+            <div class="app-title">
+                <h1>Календарь и Общая Заметка</h1>
+                <p>Группа 211 • Технология машиностроения</p>
             </div>
-            <div class="app-controls">
-                <div class="status-indicator" title="Система активна"></div>
-                <!-- Крупная кнопка расписания -->
-                <button class="control-btn" id="openScheduleModalBtn" title="Расписание группы">
-                    📚 Расписание
-                </button>
-                <!-- Крупная кнопка ИИ Ассистента -->
-                <button class="control-btn" id="toggleAiChatBtn" title="ИИ Помощник">
-                    🤖 ИИ Чат
-                </button>
-                <!-- Кнопка настроек -->
-                <button class="control-btn" id="settingsBtn" title="Настройки" style="padding: 10px 12px;">
-                    ⚙️
-                </button>
-            </div>
-        </header>
+        </div>
+        <div class="header-right">
+            <div class="status-dot" title="Система активна"></div>
+            <button class="action-btn" onclick="alert('Открытие расписания...')">
+                <span>📋</span> Расписание
+            </button>
+            <button class="action-btn ai-btn" onclick="alert('Запуск ИИ Чата...')">
+                <span>🤖</span> ИИ Чат
+            </button>
+            <button class="icon-btn" title="Настройки">⚙️</button>
+        </div>
+    </header>
 
-        <!-- Основной контент: Сетка -->
-        <div class="main-content-grid">
-            <!-- Левая колонка: Календарь -->
-            <div class="glass-panel calendar-card">
-                <div class="calendar-nav">
-                    <button class="nav-btn" id="prevMonthBtn">◀</button>
-                    <h3 id="calendarMonthTitle">Сентябрь 2026</h3>
-                    <button class="nav-btn" id="nextMonthBtn">▶</button>
-                </div>
-                <div class="calendar-grid" id="calendarGrid">
-                    <!-- Заполняется через JS -->
-                </div>
+    <!-- Основной контент -->
+    <div class="main-container">
+        <!-- Календарь -->
+        <div class="card">
+            <div class="calendar-header">
+                <button class="nav-arrow" id="prevMonth">◄</button>
+                <h2 id="monthYearTitle">Сентябрь 2026</h2>
+                <button class="nav-arrow" id="nextMonth">►</button>
             </div>
-
-            <!-- Правая колонка: Заметки на выбранный день -->
-            <div class="glass-panel notes-card">
-                <div class="notes-header">
-                    <h3 id="selectedDateSubtitle">Заметки</h3>
-                    <span class="task-counter" id="taskCounter">0 историй</span>
-                </div>
-                <div class="notes-input-area">
-                    <input type="text" id="noteInput" placeholder="Новая задача или событие...">
-                    <input type="time" id="noteTimeInput" value="12:00" style="background: rgba(255,255,255,0.05); border: 1px solid var(--panel-border); border-radius: 10px; padding: 6px 10px; color: var(--text-main); font-size: 12px; outline: none;">
-                    <button class="primary-btn" id="addNoteBtn">Добавить</button>
-                </div>
-                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 11px; color: var(--text-muted);">
-                    <input type="checkbox" id="sendToTgCheck" checked style="cursor: none !important;"> Дублировать в Telegram-бот
-                </div>
-                <div class="notes-list" id="notesList">
-                    <!-- Список заметок -->
-                </div>
+            <div class="weekdays">
+                <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
+            </div>
+            <div class="days-grid" id="daysGrid">
+                <!-- Дни генерируются скриптом -->
             </div>
         </div>
 
-        <!-- Нижний блок: Системный лог -->
-        <div class="glass-panel system-log-panel">
-            <div class="log-header">
-                <span>Системный лог (Render & Telegram)</span>
-                <button class="text-btn" id="clearLogsBtn">Очистить</button>
+        <!-- Заметки -->
+        <div class="card notes-section">
+            <h2>
+                Заметки на <span id="selectedDateText">2026-09-18</span>
+                <span id="historyCount">1 историй</span>
+            </h2>
+            <div class="note-input-group">
+                <input type="text" class="note-input" id="noteInput" placeholder="Новая задача или событие...">
+                <input type="time" class="time-picker" id="noteTime" value="12:00">
+                <button class="add-note-btn" id="addNoteBtn">Добавить</button>
             </div>
-            <div class="log-content" id="logContent">
-                <div class="log-item info">[Система] Ожидание действий пользователя...</div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="telegramSync" checked>
+                <label for="telegramSync">Дублировать в Telegram-бот</label>
+            </div>
+            <div class="notes-list" id="notesList">
+                <div class="note-item">
+                    <div class="note-content">
+                        <span class="note-text">fzcxfdv</span>
+                        <div class="note-meta">
+                            <span style="color: #3fb950;">12:00</span>
+                            <span style="color: #58a6ff;">✓ Отправлено в TG</span>
+                        </div>
+                    </div>
+                    <button class="delete-note">Удалить</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Модальное окно РАСПИСАНИЯ -->
-    <div class="settings-modal-overlay" id="scheduleModal">
-        <div class="settings-modal-window" style="width: 600px; max-height: 85vh;">
-            <div class="settings-modal-header">
-                <h3>📚 Расписание группы 211</h3>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <label class="secondary-btn" style="cursor: none !important; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; font-size: 11px;">
-                        📷 Скрин
-                        <input type="file" id="importScheduleImage" accept="image/*" style="display: none;">
-                    </label>
-                    <button class="settings-close-btn" id="closeScheduleModalBtn">✕</button>
-                </div>
-            </div>
-            <div class="settings-modal-body" id="scheduleViewContainer" style="max-height: 65vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px;">
-                <!-- Рендерится через JS -->
-            </div>
+    <!-- Системный лог -->
+    <div class="log-card">
+        <div class="log-header">
+            <span>Системный лог (Render & Telegram)</span>
+            <button class="clear-log" onclick="clearLog()">Очистить</button>
         </div>
-    </div>
-
-    <!-- Плавающий AI Чат -->
-    <div class="ai-chat-window" id="aiChatWindow">
-        <div class="ai-chat-header">
-            <div class="ai-chat-title">
-                <div class="ai-status-dot"></div>
-                <span>ИИ Ассистент (Группа 211)</span>
-            </div>
-            <button class="ai-close-btn" id="closeAiChatBtn">✕</button>
-        </div>
-        <div class="ai-chat-messages" id="aiChatMessages">
-            <div class="ai-msg ai">Привет! Напиши мне задачу или расписание в свободной форме (например: *«Поставь пару по инженерной графике на среду»*), и я сам распределю её и отправлю в Telegram!</div>
-        </div>
-        <div class="ai-chat-input-area">
-            <input type="text" id="aiChatInput" placeholder="Введите сообщение для ИИ...">
-            <button class="primary-btn" id="aiSendBtn">➤</button>
-        </div>
-    </div>
-
-    <!-- Модальное окно настроек -->
-    <div class="settings-modal-overlay" id="settingsModal">
-        <div class="settings-modal-window">
-            <div class="settings-modal-header">
-                <h3>⚙️ Настройки и бэкап</h3>
-                <button class="settings-close-btn" id="closeSettingsBtn">✕</button>
-            </div>
-            <div class="settings-modal-body">
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <span class="setting-title">Цветовая тема</span>
-                        <span class="setting-desc">Выберите акцентный стиль интерфейса</span>
-                    </div>
-                    <div class="theme-options">
-                        <button class="theme-btn" data-theme="default" style="background: #3b82f6;" title="Синий классический"></button>
-                        <button class="theme-btn" data-theme="purple" style="background: #8b5cf6;" title="Фиолетовый киберпанк"></button>
-                        <button class="theme-btn" data-theme="green" style="background: #10b981;" title="Неоновый зеленый"></button>
-                        <button class="theme-btn" data-theme="sunset" style="background: #f97316;" title="Закат оранжевый"></button>
-                        <button class="theme-btn" data-theme="pink" style="background: #ec4899;" title="Розовый неон"></button>
-                    </div>
-                </div>
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <span class="setting-title">Экспорт данных</span>
-                        <span class="setting-desc">Скачать все заметки в JSON-файл</span>
-                    </div>
-                    <button class="secondary-btn" id="exportBtn">Скачать</button>
-                </div>
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <span class="setting-title">Сброс данных</span>
-                        <span class="setting-desc">Удалить все сохраненные задачи</span>
-                    </div>
-                    <button class="danger-btn" id="resetDataBtn">Очистить всё</button>
-                </div>
-            </div>
+        <div class="log-box" id="logBox">
+            <div><span class="log-system">[Система]</span> Ожидание действий пользователя...</div>
+            <div><span class="log-time">[19:42:30]</span> Система полностью инициализирована.</div>
         </div>
     </div>
 
     <script>
-        // Логика приложения
-        let currentDate = new Date();
-        let selectedDateStr = formatDateKey(new Date());
-        let notesData = JSON.parse(localStorage.getItem('app_notes')) || {};
+        /* Плавное движение кастомного курсора */
+        const cursor = document.getElementById('customCursor');
+        let mouseX = 0, mouseY = 0;
+        let cursorX = 0, cursorY = 0;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initTheme();
-            initCalendar();
-            renderSelectedDateNotes();
-            renderSchedule();
-            setupEventListeners();
-            addLog('Система полностью инициализирована.', 'success');
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
         });
 
-        function formatDateKey(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+        function updateCursor() {
+            // Плавное преследование (интерполяция)
+            cursorX += (mouseX - cursorX) * 0.2;
+            cursorY += (mouseY - cursorY) * 0.2;
+            cursor.style.transform = `translate(${cursorX}px, ${cursorY}px) translate(-50%, -50%)`;
+            requestAnimationFrame(updateCursor);
         }
+        requestAnimationFrame(updateCursor);
 
-        function initTheme() {
-            const savedTheme = localStorage.getItem('app_theme') || 'default';
-            if (savedTheme !== 'default') {
-                document.body.setAttribute('data-theme', savedTheme);
-            }
-            updateThemeButtonsActive(savedTheme);
-        }
+        // Эффект увеличения при наведении на интерактивные элементы
+        const interactiveElements = document.querySelectorAll('button, input, .day-cell, a');
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+            el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+        });
 
-        function updateThemeButtonsActive(themeName) {
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                if (btn.getAttribute('data-theme') === themeName) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-        }
+        // Генерация дней календаря
+        const daysGrid = document.getElementById('daysGrid');
+        const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+        let currentDate = new Date(2026, 8, 18); // Сентябрь 2026
 
-        function initCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            const title = document.getElementById('calendarMonthTitle');
-            if (!grid || !title) return;
-
-            grid.innerHTML = '';
+        function renderCalendar() {
+            daysGrid.innerHTML = '';
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
 
-            const monthsNames = [
-                'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
-            ];
-            title.textContent = `${monthsNames[month]} ${year}`;
+            document.getElementById('monthYearTitle').textContent = `${monthNames[month]} ${year}`;
 
-            const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-            daysOfWeek.forEach(day => {
-                const headerEl = document.createElement('div');
-                headerEl.className = 'cal-day-header';
-                headerEl.textContent = day;
-                grid.appendChild(headerEl);
-            });
-
-            const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+            // Первый день месяца и количество дней
+            let firstDayIndex = new Date(year, month, 1).getDay();
+            firstDayIndex = firstDayIndex === 0 ? 6 : firstDayIndex - 1; // Сдвиг под понедельник
             const totalDays = new Date(year, month + 1, 0).getDate();
 
+            // Пустые ячейки для предыдущего месяца
             for (let i = 0; i < firstDayIndex; i++) {
                 const emptyCell = document.createElement('div');
-                emptyCell.className = 'cal-cell-empty';
-                grid.appendChild(emptyCell);
+                emptyCell.className = 'day-cell';
+                emptyCell.style.opacity = '0.3';
+                daysGrid.appendChild(emptyCell);
             }
 
+            // Дни текущего месяца
             for (let day = 1; day <= totalDays; day++) {
-                const cell = document.createElement('div');
-                cell.className = 'cal-cell';
-                const cellDate = new Date(year, month, day);
-                const dateKey = formatDateKey(cellDate);
-
-                cell.textContent = day;
-
-                if (dateKey === selectedDateStr) {
-                    cell.classList.add('active');
+                const dayCell = document.createElement('div');
+                dayCell.className = 'day-cell';
+                if (day === 18 && month === 8) {
+                    dayCell.classList.add('selected', 'has-note');
                 }
-
-                if (notesData[dateKey] && notesData[dateKey].length > 0) {
-                    cell.classList.add('has-note');
-                }
-
-                cell.addEventListener('click', () => {
-                    selectedDateStr = dateKey;
-                    initCalendar();
-                    renderSelectedDateNotes();
+                dayCell.textContent = day;
+                dayCell.addEventListener('click', () => {
+                    document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
+                    dayCell.classList.add('selected');
+                    document.getElementById('selectedDateText').textContent = `${year}-${String(month+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 });
-
-                grid.appendChild(cell);
+                daysGrid.appendChild(dayCell);
             }
         }
 
-        function renderSelectedDateNotes() {
-            const subtitle = document.getElementById('selectedDateSubtitle');
-            const list = document.getElementById('notesList');
-            const counter = document.getElementById('taskCounter');
-            if (!subtitle || !list) return;
+        renderCalendar();
 
-            subtitle.textContent = `Заметки на ${selectedDateStr}`;
-            list.innerHTML = '';
-
-            const dayNotes = notesData[selectedDateStr] || [];
-            counter.textContent = `${dayNotes.length} историй`;
-
-            if (dayNotes.length === 0) {
-                list.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 20px;">Нет задач на этот день ✨</div>`;
-                return;
-            }
-
-            dayNotes.forEach((note, index) => {
-                const row = document.createElement('div');
-                row.className = 'note-row';
-                row.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <span style="font-size: 13px; word-break: break-all;">${escapeHtml(note.text)}</span>
-                        <span style="font-size: 11px; color: var(--accent-color); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 6px;">${note.time || ''}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                        <span style="font-size: 10px; color: var(--text-muted);">${note.sentToTg ? '✓ Отправлено в TG' : ''}</span>
-                        <button class="note-delete-btn" onclick="deleteNote('${selectedDateStr}', ${index})">Удалить</button>
-                    </div>
-                `;
-                list.appendChild(row);
-            });
-        }
-
-        function addNewNote() {
-            const input = document.getElementById('noteInput');
-            const timeInput = document.getElementById('noteTimeInput');
-            const tgCheck = document.getElementById('sendToTgCheck');
-            if (!input || !input.value.trim()) return;
-
-            const text = input.value.trim();
-            const time = timeInput ? timeInput.value : '12:00';
-            const sendTg = tgCheck ? tgCheck.checked : true;
-
-            if (!notesData[selectedDateStr]) {
-                notesData[selectedDateStr] = [];
-            }
-
-            notesData[selectedDateStr].push({ text, time, sentToTg: sendTg });
-            localStorage.setItem('app_notes', JSON.stringify(notesData));
-            input.value = '';
-
-            initCalendar();
-            renderSelectedDateNotes();
-            addLog(`Добавлена задача на ${selectedDateStr}: "${text}"`, 'success');
-            if (sendTg) {
-                addLog(`[Telegram Bot] Уведомление успешно отправлено в чат группы 211.`, 'info');
-            }
-        }
-
-        window.deleteNote = function(dateKey, index) {
-            if (!notesData[dateKey]) return;
-            notesData[dateKey].splice(index, 1);
-            if (notesData[dateKey].length === 0) delete notesData[dateKey];
-            localStorage.setItem('app_notes', JSON.stringify(notesData));
-            initCalendar();
-            renderSelectedDateNotes();
-            addLog(`Задача удалена из расписания.`, 'info');
-        };
-
-        function renderSchedule() {
-            const container = document.getElementById('scheduleViewContainer');
-            if (!container) return;
-
-            const schedule = [
-                { day: 'Понедельник', items: ['14-00', 'Учебная практика', 'мастерские'] },
-                { day: 'Вторник', items: ['Проц. формообр.', 'Иностранный язык'] },
-                { day: 'Среда', items: ['Инженерная графика', 'Технология машиностроения'] },
-                { day: 'Четверг', items: ['Сопротивление материалов', 'Электротехника'] },
-                { day: 'Пятница', items: ['Физическая культура', 'Базовая математика'] }
-            ];
-
-            container.innerHTML = '';
-            schedule.forEach(block => {
-                const card = document.createElement('div');
-                card.className = 'schedule-day-card';
-                card.innerHTML = `
-                    <div class="schedule-day-title">${block.day}</div>
-                    ${block.items.map(item => `<div class="schedule-subj-item">• ${item}</div>`).join('')}
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function addLog(text, type = 'info') {
-            const logContent = document.getElementById('logContent');
-            if (!logContent) return;
-
-            const timeStr = new Date().toLocaleTimeString();
-            const item = document.createElement('div');
-            item.className = `log-item ${type}`;
-            item.textContent = `[${timeStr}] ${text}`;
-            logContent.appendChild(item);
-            logContent.scrollTop = logContent.scrollHeight;
-        }
-
-        function setupEventListeners() {
-            document.getElementById('prevMonthBtn')?.addEventListener('click', () => {
-                currentDate.setMonth(currentDate.getMonth() - 1);
-                initCalendar();
-            });
-
-            document.getElementById('nextMonthBtn')?.addEventListener('click', () => {
-                currentDate.setMonth(currentDate.getMonth() + 1);
-                initCalendar();
-            });
-
-            document.getElementById('addNoteBtn')?.addEventListener('click', addNewNote);
-            document.getElementById('noteInput')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') addNewNote();
-            });
-
-            document.getElementById('clearLogsBtn')?.addEventListener('click', () => {
-                const logContent = document.getElementById('logContent');
-                if (logContent) logContent.innerHTML = '';
-            });
-
-            // Расписание модалка
-            const scheduleModal = document.getElementById('scheduleModal');
-            document.getElementById('openScheduleModalBtn')?.addEventListener('click', () => scheduleModal?.classList.add('active'));
-            document.getElementById('closeScheduleModalBtn')?.addEventListener('click', () => scheduleModal?.classList.remove('active'));
-            scheduleModal?.addEventListener('click', (e) => {
-                if (e.target === scheduleModal) scheduleModal.classList.remove('active');
-            });
-
-            // Настройки модалка
-            const settingsModal = document.getElementById('settingsModal');
-            document.getElementById('settingsBtn')?.addEventListener('click', () => settingsModal?.classList.add('active'));
-            document.getElementById('closeSettingsBtn')?.addEventListener('click', () => settingsModal?.classList.remove('active'));
-            settingsModal?.addEventListener('click', (e) => {
-                if (e.target === settingsModal) settingsModal.classList.remove('active');
-            });
-
-            // Темы
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const theme = btn.getAttribute('data-theme');
-                    if (theme === 'default') {
-                        document.body.removeAttribute('data-theme');
-                        localStorage.removeItem('app_theme');
-                    } else {
-                        document.body.setAttribute('data-theme', theme);
-                        localStorage.setItem('app_theme', theme);
-                    }
-                    updateThemeButtonsActive(theme);
-                    addLog(`Изменена тема оформления на: ${theme}`, 'info');
-                });
-            });
-
-            // Экспорт
-            document.getElementById('exportBtn')?.addEventListener('click', () => {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notesData, null, 2));
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", `group211_notes_${formatDateKey(new Date())}.json`);
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                downloadAnchor.remove();
-                addLog('Экспорт заметок в JSON выполнен успешно.', 'success');
-            });
-
-            // Сброс
-            document.getElementById('resetDataBtn')?.addEventListener('click', () => {
-                if (confirm('Удалить все сохраненные задачи?')) {
-                    notesData = {};
-                    localStorage.removeItem('app_notes');
-                    initCalendar();
-                    renderSelectedDateNotes();
-                    addLog('Все данные были сброшены пользователем.', 'error');
-                }
-            });
-
-            // ИИ Чат
-            const aiChatWindow = document.getElementById('aiChatWindow');
-            document.getElementById('toggleAiChatBtn')?.addEventListener('click', () => aiChatWindow?.classList.toggle('active'));
-            document.getElementById('closeAiChatBtn')?.addEventListener('click', () => aiChatWindow?.classList.remove('active'));
-
-            const aiSendBtn = document.getElementById('aiSendBtn');
-            const aiChatInput = document.getElementById('aiChatInput');
-            const aiChatMessages = document.getElementById('aiChatMessages');
-
-            const handleAiSend = () => {
-                const text = aiChatInput?.value.trim();
-                if (!text) return;
-
-                const userMsg = document.createElement('div');
-                userMsg.className = 'ai-msg user';
-                userMsg.textContent = text;
-                aiChatMessages.appendChild(userMsg);
-                aiChatInput.value = '';
-                aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
-
-                addLog(`[AI Assistant] Обработка запроса: "${text}"`, 'info');
-
-                setTimeout(() => {
-                    const aiMsg = document.createElement('div');
-                    aiMsg.className = 'ai-msg ai';
-                    aiMsg.textContent = `Я проанализировал ваш запрос и успешно добавил задачу в расписание группы 211, а также направил уведомление в Telegram! 🤖✨`;
-                    aiChatMessages.appendChild(aiMsg);
-                    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
-                    addLog(`[AI Assistant] Задача успешно распределена и отправлена.`, 'success');
-                }, 800);
-            };
-
-            aiSendBtn?.addEventListener('click', handleAiSend);
-            aiChatInput?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') handleAiSend();
-            });
-
-            // Кастомный курсор с точным позиционированием
-            const cursor = document.getElementById('customCursor');
-            const dot = document.getElementById('cursorDot');
-            
-            document.addEventListener('mousemove', (e) => {
-                if (cursor && dot) {
-                    cursor.style.left = `${e.clientX}px`;
-                    cursor.style.top = `${e.clientY}px`;
-                    dot.style.left = `${e.clientX}px`;
-                    dot.style.top = `${e.clientY}px`;
-                }
-            });
-        }
-
-        function escapeHtml(str) {
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        function clearLog() {
+            document.getElementById('logBox').innerHTML = '<div><span class="log-system">[Система]</span> Лог очищен.</div>';
         }
     </script>
 </body>
