@@ -17,7 +17,10 @@
             </div>
             <div class="app-controls">
                 <div class="status-indicator" title="Сервер активен"></div>
-                <button id="settingsBtn" class="control-btn" title="Настройки">⚙️</button>
+                <!-- Кнопка открытия AI-чата -->
+                <button id="toggleAiChatBtn" class="control-btn" title="ИИ Помощник">🤖</button>
+                <!-- Кнопка настроек -->
+                <button id="settingsBtn" class="control-btn" title="Настройки и бэкап">⚙️</button>
             </div>
         </header>
 
@@ -30,9 +33,7 @@
                     <h3 id="calendarMonthTitle">Сентябрь 2026</h3>
                     <button id="nextMonthBtn" class="nav-btn">▶</button>
                 </div>
-                <div id="calendarGrid" class="calendar-grid">
-                    <!-- Заголовки дней недели и ячейки генерируются через JS -->
-                </div>
+                <div id="calendarGrid" class="calendar-grid"></div>
             </div>
 
             <!-- Блок заметок -->
@@ -47,9 +48,7 @@
                     <button id="addNoteBtn" class="primary-btn">⚡</button>
                 </div>
 
-                <div id="notesList" class="notes-list">
-                    <!-- Список задач динамический -->
-                </div>
+                <div id="notesList" class="notes-list"></div>
             </div>
         </div>
 
@@ -59,13 +58,63 @@
                 <span>Системный лог</span>
                 <button id="clearLogsBtn" class="text-btn">Очистить</button>
             </div>
-            <div id="logContent" class="log-content">
-                <!-- Сюда падают логи -->
+            <div id="logContent" class="log-content"></div>
+        </div>
+    </div>
+
+    <!-- Плавающий AI Чат -->
+    <div id="aiChatWindow" class="ai-chat-window">
+        <div class="ai-chat-header">
+            <div class="ai-chat-title">
+                <span class="ai-status-dot"></span>
+                <span>ИИ Помощник</span>
+            </div>
+            <button id="closeAiChatBtn" class="ai-close-btn">✕</button>
+        </div>
+        <div id="aiChatMessages" class="ai-chat-messages">
+            <div class="ai-msg ai">Привет! Я твой локальный ассистент. Чем помочь по учебе или коду? 🚀</div>
+        </div>
+        <div class="ai-chat-input-area">
+            <input type="text" id="aiChatInput" placeholder="Спроси о чем-нибудь...">
+            <button id="aiSendBtn" class="primary-btn">➤</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно настроек (Экспорт / Импорт) -->
+    <div id="settingsModal" class="settings-modal-overlay">
+        <div class="settings-modal-window">
+            <div class="settings-modal-header">
+                <h3>⚙️ Настройки и бэкап</h3>
+                <button id="closeSettingsBtn" class="settings-close-btn">✕</button>
+            </div>
+            <div class="settings-modal-body">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-title">Экспорт данных</span>
+                        <span class="setting-desc">Скачать все заметки в JSON-файл</span>
+                    </div>
+                    <button id="exportBtn" class="secondary-btn">Скачать</button>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-title">Импорт данных</span>
+                        <span class="setting-desc">Загрузить заметки из файла</span>
+                    </div>
+                    <label class="file-upload-label secondary-btn">
+                        Загрузить <input type="file" id="importFile" accept=".json" style="display: none;">
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-title">Сброс данных</span>
+                        <span class="setting-desc">Удалить все сохраненные задачи</span>
+                    </div>
+                    <button id="resetDataBtn" class="danger-btn">Очистить всё</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Подключаем твой финальный скрипт -->
     <script src="script.js"></script>
 </body>
 </html>
