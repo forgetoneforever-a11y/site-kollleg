@@ -2,36 +2,21 @@
 const RENDER_BACKEND_URL = 'https://bot-kolledj.onrender.com/send-note';
 const MY_TELEGRAM_ID = '8617178928'; // Твой Telegram ID
 
-// Функция отправки уведомления боту
 async function sendNoteToTelegram(taskText, dateStr) {
     if (!taskText || !dateStr) return;
-    
     try {
-        const response = await fetch(RENDER_BACKEND_URL, {
+        await fetch(RENDER_BACKEND_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                text: taskText,
-                date: dateStr,
-                user_id: MY_TELEGRAM_ID
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: taskText, date: dateStr, user_id: MY_TELEGRAM_ID })
         });
-
-        if (response.ok) {
-            logToDebug('Заметка успешно отправлена в Telegram!', 'success');
-        } else {
-            logToDebug('Ошибка сервера при отправке в ТГ', 'error');
-        }
+        logToDebug('Заметка успешно отправлена в Telegram!', 'success');
     } catch (err) {
         logToDebug('Сетевая ошибка отправки в ТГ', 'error');
     }
 }
 
-// --- Основной логический код приложения ---
-
-// Кастомный курсор
+// --- Кастомный курсор ---
 const cursor = document.createElement('div');
 cursor.className = 'custom-cursor';
 const cursorDot = document.createElement('div');
@@ -39,9 +24,7 @@ cursorDot.className = 'cursor-dot';
 document.body.appendChild(cursor);
 document.body.appendChild(cursorDot);
 
-let mouseX = 0, mouseY = 0;
-let cursorX = 0, cursorY = 0;
-
+let mouseX = 0, mouseY = 0, cursorX = 0, cursorY = 0;
 window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
@@ -58,7 +41,6 @@ function animateCursor() {
 }
 animateCursor();
 
-// Добавление эффекта наведения для интерактивных элементов
 document.addEventListener('mouseover', (e) => {
     if (e.target.matches('button, input, select, .cal-cell, a, .control-btn')) {
         document.body.classList.add('hovered');
@@ -70,7 +52,7 @@ document.addEventListener('mouseout', (e) => {
     }
 });
 
-// Состояние календаря и заметок
+// --- Состояние календаря и заметок ---
 let currentDate = new Date();
 let selectedDateStr = formatDateKey(currentDate);
 let notesData = JSON.parse(localStorage.getItem('app_notes_data') || '{}');
@@ -82,7 +64,6 @@ function formatDateKey(date) {
     return `${year}-${month}-${day}`;
 }
 
-// Логирование в интерфейсе
 function logToDebug(text, type = 'info') {
     const logContent = document.getElementById('logContent');
     if (!logContent) return;
@@ -94,7 +75,6 @@ function logToDebug(text, type = 'info') {
     logContent.scrollTop = logContent.scrollHeight;
 }
 
-// Рендер календаря
 function renderCalendar() {
     const grid = document.getElementById('calendarGrid');
     const monthTitle = document.getElementById('calendarMonthTitle');
@@ -112,24 +92,18 @@ function renderCalendar() {
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-
-    const monthsNames = [
-        "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-        "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
-    ];
+    const monthsNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
     monthTitle.textContent = `${monthsNames[month]} ${year}`;
 
     const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
     const totalDays = new Date(year, month + 1, 0).getDate();
 
-    // Пустые ячейки для выравнивания дней недели
     for (let i = 0; i < firstDayIndex; i++) {
         const emptyCell = document.createElement('div');
         emptyCell.className = 'cal-cell-empty';
         grid.appendChild(emptyCell);
     }
 
-    // Дни месяца
     for (let day = 1; day <= totalDays; day++) {
         const cellDate = new Date(year, month, day);
         const dateStr = formatDateKey(cellDate);
@@ -137,25 +111,18 @@ function renderCalendar() {
         cell.className = 'cal-cell';
         cell.textContent = day;
 
-        if (dateStr === selectedDateStr) {
-            cell.classList.add('active');
-        }
-
-        if (notesData[dateStr] && notesData[dateStr].length > 0) {
-            cell.classList.add('has-note');
-        }
+        if (dateStr === selectedDateStr) cell.classList.add('active');
+        if (notesData[dateStr] && notesData[dateStr].length > 0) cell.classList.add('has-note');
 
         cell.addEventListener('click', () => {
             selectedDateStr = dateStr;
             renderCalendar();
             renderNotesForSelectedDate();
         });
-
         grid.appendChild(cell);
     }
 }
 
-// Рендер списка заметок на выбранную дату
 function renderNotesForSelectedDate() {
     const subtitle = document.getElementById('selectedDateSubtitle');
     const counter = document.getElementById('taskCounter');
@@ -185,16 +152,13 @@ function renderNotesForSelectedDate() {
     });
 }
 
-// Добавление новой задачи
 function addNewTask() {
     const input = document.getElementById('noteInput');
     if (!input) return;
     const text = input.value.trim();
     if (!text) return;
 
-    if (!notesData[selectedDateStr]) {
-        notesData[selectedDateStr] = [];
-    }
+    if (!notesData[selectedDateStr]) notesData[selectedDateStr] = [];
     notesData[selectedDateStr].push(text);
     localStorage.setItem('app_notes_data', JSON.stringify(notesData));
 
@@ -202,50 +166,117 @@ function addNewTask() {
     renderCalendar();
     renderNotesForSelectedDate();
     logToDebug(`Добавлена заметка на ${selectedDateStr}: "${text}"`, 'success');
-
-    // 🚀 Отправляем задачу в Telegram-бот на Render
     sendNoteToTelegram(text, selectedDateStr);
 }
 
-// Удаление задачи
 window.deleteTask = function(dateStr, index) {
     if (!notesData[dateStr]) return;
     notesData[dateStr].splice(index, 1);
-    if (notesData[dateStr].length === 0) {
-        delete notesData[dateStr];
-    }
+    if (notesData[dateStr].length === 0) delete notesData[dateStr];
     localStorage.setItem('app_notes_data', JSON.stringify(notesData));
     renderCalendar();
     renderNotesForSelectedDate();
     logToDebug(`Удалена заметка с ${dateStr}`, 'info');
 };
 
-// Переключение месяцев в календаре
+// --- Управление модальным окном настроек (Бэкап) ---
+const settingsModal = document.getElementById('settingsModal');
+document.getElementById('settingsBtn')?.addEventListener('click', () => settingsModal.classList.add('active'));
+document.getElementById('closeSettingsBtn')?.addEventListener('click', () => settingsModal.classList.remove('active'));
+
+// Экспорт в JSON
+document.getElementById('exportBtn')?.addEventListener('click', () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notesData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `calendar_backup_${formatDateKey(new Date())}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    logToDebug('Бэкап заметок успешно скачан!', 'success');
+});
+
+// Импорт из JSON
+document.getElementById('importFile')?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        try {
+            notesData = JSON.parse(event.target.result);
+            localStorage.setItem('app_notes_data', JSON.stringify(notesData));
+            renderCalendar();
+            renderNotesForSelectedDate();
+            logToDebug('Заметки успешно импортированы из файла!', 'success');
+            settingsModal.classList.remove('active');
+        } catch (err) {
+            logToDebug('Ошибка при чтении JSON файла', 'error');
+        }
+    };
+    reader.readAsText(file);
+});
+
+// Сброс данных
+document.getElementById('resetDataBtn')?.addEventListener('click', () => {
+    if (confirm("Точно удалить все заметки?")) {
+        notesData = {};
+        localStorage.removeItem('app_notes_data');
+        renderCalendar();
+        renderNotesForSelectedDate();
+        logToDebug('Все данные стерты', 'info');
+        settingsModal.classList.remove('active');
+    }
+});
+
+// --- Управление AI чатом ---
+const aiChatWindow = document.getElementById('aiChatWindow');
+document.getElementById('toggleAiChatBtn')?.addEventListener('click', () => aiChatWindow.classList.toggle('active'));
+document.getElementById('closeAiChatBtn')?.addEventListener('click', () => aiChatWindow.classList.remove('active'));
+
+const aiMessages = document.getElementById('aiChatMessages');
+const aiInput = document.getElementById('aiChatInput');
+
+function sendAiMessage() {
+    const text = aiInput.value.trim();
+    if (!text) return;
+
+    // Сообщение пользователя
+    const userMsg = document.createElement('div');
+    userMsg.className = 'ai-msg user';
+    userMsg.textContent = text;
+    aiMessages.appendChild(userMsg);
+    aiInput.value = '';
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+
+    // Имитация ответа ИИ (или можно подключить к бэкенду)
+    setTimeout(() => {
+        const botMsg = document.createElement('div');
+        botMsg.className = 'ai-msg ai';
+        botMsg.textContent = `Я зафиксировал твой вопрос: "${text}". Скоро подключим полноценный генеративный ответ! 🤖`;
+        aiMessages.appendChild(botMsg);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+    }, 600);
+}
+
+document.getElementById('aiSendBtn')?.addEventListener('click', sendAiMessage);
+aiInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendAiMessage(); });
+
+// Навигация по месяцам
 document.getElementById('prevMonthBtn')?.addEventListener('click', () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar();
 });
-
 document.getElementById('nextMonthBtn')?.addEventListener('click', () => {
     currentDate.setMonth(currentDate.getMonth() + 1);
     renderCalendar();
 });
 
-// Кнопка добавления задачи по клику и Enter
 document.getElementById('addNoteBtn')?.addEventListener('click', addNewTask);
-document.getElementById('noteInput')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') addNewTask();
-});
+document.getElementById('noteInput')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') addNewTask(); });
+document.getElementById('clearLogsBtn')?.addEventListener('click', () => { document.getElementById('logContent').innerHTML = ''; });
 
-// Очистка логов
-document.getElementById('clearLogsBtn')?.addEventListener('click', () => {
-    const logContent = document.getElementById('logContent');
-    if (logContent) logContent.innerHTML = '';
-});
-
-// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderNotesForSelectedDate();
-    logToDebug('Система успешно инициализирована.', 'success');
+    logToDebug('Система успешно инициализирована с AI и бэкапом.', 'success');
 });
