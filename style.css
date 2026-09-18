@@ -1,14 +1,13 @@
 :root {
-    --bg-main: #0d1117;
-    --panel-bg: rgba(22, 27, 34, 0.75);
-    --border-color: rgba(255, 255, 255, 0.08);
-    --text-main: #f0f6fc;
-    --text-muted: #8b949e;
-    --accent: #2f81f7;
-    --accent-hover: #388bfd;
-    --accent-glow: rgba(47, 129, 247, 0.15);
-    --danger: #f85149;
-    --success: #3fb950;
+    --bg-color: #0b0f19;
+    --panel-bg: rgba(17, 24, 39, 0.7);
+    --panel-border: rgba(255, 255, 255, 0.08);
+    --text-main: #f3f4f6;
+    --text-muted: #9ca3af;
+    --accent-color: #3b82f6;
+    --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    --danger-color: #ef4444;
+    --success-color: #10b981;
 }
 
 * {
@@ -16,69 +15,65 @@
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    cursor: none !important; /* Используем кастомный курсор */
 }
 
 body {
-    background-color: var(--bg-main);
+    background-color: var(--bg-color);
     color: var(--text-main);
     min-height: 100vh;
+    padding: 20px;
     overflow-x: hidden;
-    background-image: radial-gradient(circle at 10% 20%, rgba(47, 129, 247, 0.05) 0%, transparent 40%),
-                      radial-gradient(circle at 90% 80%, rgba(63, 185, 80, 0.03) 0%, transparent 40%);
+    cursor: default;
 }
 
-/* --- Кастомный курсор --- */
+/* Кастомный курсор */
 .custom-cursor {
     position: fixed;
-    top: 0; left: 0;
-    width: 24px; height: 24px;
-    border: 1.5px solid rgba(47, 129, 247, 0.6);
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(59, 130, 246, 0.4);
     border-radius: 50%;
     pointer-events: none;
     transform: translate(-50%, -50%);
-    transition: width 0.15s, height 0.15s, border-color 0.15s;
-    z-index: 99999;
+    transition: width 0.2s, height 0.2s, background-color 0.2s;
+    z-index: 9999;
 }
 
 .cursor-dot {
     position: fixed;
-    top: 0; left: 0;
-    width: 5px; height: 5px;
-    background: var(--accent);
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-color);
     border-radius: 50%;
     pointer-events: none;
     transform: translate(-50%, -50%);
-    z-index: 99999;
+    z-index: 10000;
 }
 
 body.hovered .custom-cursor {
-    width: 36px;
-    height: 36px;
-    border-color: var(--success);
-    background: rgba(63, 185, 80, 0.05);
-}
-
-/* --- Общие панели (Glassmorphism) --- */
-.glass-panel {
-    background: var(--panel-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    width: 48px;
+    height: 48px;
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.8);
 }
 
 .app-container {
-    max-width: 1100px;
-    width: 100%;
+    max-width: 1000px;
     margin: 0 auto;
-    min-height: 100vh;
-    padding: 30px 20px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 20px;
+    gap: 16px;
+}
+
+/* Стекломорфизм панели */
+.glass-panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 /* Шапка */
@@ -86,72 +81,72 @@ body.hovered .custom-cursor {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 24px;
-    background: var(--panel-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 14px;
+    padding: 16px 20px;
 }
 
 .app-title-area h2 {
     font-size: 18px;
     font-weight: 600;
+    letter-spacing: -0.3px;
 }
 
 .app-subtitle {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-muted);
 }
 
 .app-controls {
     display: flex;
+    gap: 10px;
     align-items: center;
-    gap: 12px;
 }
 
 .status-indicator {
     width: 8px;
     height: 8px;
-    background: var(--success);
+    background-color: var(--success-color);
     border-radius: 50%;
-    box-shadow: 0 0 8px var(--success);
+    box-shadow: 0 0 8px var(--success-color);
 }
 
 .control-btn {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--panel-border);
     color: var(--text-main);
-    width: 34px; height: 34px;
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    cursor: pointer;
     transition: all 0.2s;
 }
-.control-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); }
 
-/* Основная сетка */
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Сетка контента */
 .main-content-grid {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 20px;
-}
-
-@media(max-width: 850px) {
-    .main-content-grid { grid-template-columns: 1fr; }
-}
-
-/* Календарь */
-.calendar-card {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
+    grid-template-columns: 1fr 1fr;
     gap: 16px;
 }
 
+@media (max-width: 768px) {
+    .main-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Календарь */
 .calendar-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 16px;
 }
 
 .calendar-nav h3 {
@@ -160,65 +155,71 @@ body.hovered .custom-cursor {
 }
 
 .nav-btn {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    padding: 6px 12px;
-    border-radius: 8px;
-    transition: background 0.2s;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: color 0.2s;
 }
-.nav-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+.nav-btn:hover {
+    color: var(--text-main);
+}
 
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
+    text-align: center;
 }
 
 .cal-day-header {
-    text-align: center;
     font-size: 11px;
-    font-weight: 600;
     color: var(--text-muted);
+    font-weight: 600;
     padding-bottom: 6px;
 }
 
 .cal-cell {
     aspect-ratio: 1;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     font-size: 13px;
-    font-weight: 500;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid transparent;
+    cursor: pointer;
     position: relative;
     transition: all 0.15s;
 }
 
 .cal-cell:hover {
-    border-color: var(--accent);
-    background: rgba(47, 129, 247, 0.05);
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .cal-cell.active {
-    background: var(--accent);
-    border-color: var(--accent);
+    background: var(--accent-gradient);
     color: #fff;
-    box-shadow: 0 0 12px var(--accent-glow);
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .cal-cell.has-note::after {
     content: '';
     position: absolute;
-    bottom: 5px;
-    width: 4px; height: 4px;
-    background: var(--success);
+    bottom: 4px;
+    width: 4px;
+    height: 4px;
+    background-color: var(--accent-color);
     border-radius: 50%;
 }
-.cal-cell.active.has-note::after { background: #fff; }
+
+.cal-cell.active.has-note::after {
+    background-color: #fff;
+}
 
 .cal-cell-empty {
     aspect-ratio: 1;
@@ -226,97 +227,136 @@ body.hovered .custom-cursor {
 
 /* Блок заметок */
 .notes-card {
-    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    max-height: 440px;
 }
 
 .notes-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 14px;
 }
 
 .notes-header h3 {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
 }
 
 .task-counter {
     font-size: 11px;
     color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 8px;
+    border-radius: 6px;
 }
 
 .notes-input-area {
     display: flex;
     gap: 8px;
+    margin-bottom: 14px;
 }
 
-.notes-input-area input, .ai-chat-input-area input {
+.notes-input-area input[type="text"] {
     flex: 1;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
     padding: 10px 14px;
-    border-radius: 8px;
     color: var(--text-main);
     font-size: 13px;
     outline: none;
     transition: border-color 0.2s;
 }
-.notes-input-area input:focus, .ai-chat-input-area input:focus {
-    border-color: var(--accent);
+
+.notes-input-area input[type="text"]:focus {
+    border-color: var(--accent-color);
 }
 
 .primary-btn {
-    background: var(--accent);
+    background: var(--accent-gradient);
     border: none;
     color: #fff;
-    padding: 0 14px;
-    border-radius: 8px;
+    padding: 0 16px;
+    border-radius: 10px;
     font-weight: 600;
-    transition: background 0.2s;
+    font-size: 13px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
 }
-.primary-btn:hover { background: var(--accent-hover); }
+
+.primary-btn:hover {
+    opacity: 0.9;
+}
+
+.primary-btn:active {
+    transform: scale(0.96);
+}
 
 .notes-list {
     flex: 1;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
     padding-right: 4px;
 }
 
 .note-row {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
     padding: 10px 12px;
-    border-radius: 8px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    animation: fadeIn 0.2s ease;
 }
 
-.note-top-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .note-delete-btn {
-    background: none;
+    background: transparent;
     border: none;
     color: var(--text-muted);
     font-size: 11px;
     cursor: pointer;
+    transition: color 0.2s;
 }
-.note-delete-btn:hover { color: var(--danger); }
+
+.note-delete-btn:hover {
+    color: var(--danger-color);
+}
+
+/* Панель расписания колледжа */
+.schedule-day-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.schedule-day-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #60a5fa;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.schedule-subj-item {
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 2px 0;
+}
 
 /* Системный лог */
 .system-log-panel {
-    padding: 14px 18px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -327,25 +367,26 @@ body.hovered .custom-cursor {
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
-    font-weight: 600;
     color: var(--text-muted);
 }
 
 .text-btn {
-    background: none;
+    background: transparent;
     border: none;
     color: var(--text-muted);
     font-size: 11px;
     cursor: pointer;
 }
-.text-btn:hover { color: var(--text-main); }
+
+.text-btn:hover {
+    color: var(--text-main);
+}
 
 .log-content {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     padding: 10px;
-    height: 80px;
+    height: 90px;
     overflow-y: auto;
     font-family: monospace;
     font-size: 11px;
@@ -354,44 +395,43 @@ body.hovered .custom-cursor {
     gap: 4px;
 }
 
-.log-item.success { color: var(--success); }
-.log-item.error { color: var(--danger); }
-.log-item.info { color: var(--accent); }
+.log-item.info { color: var(--text-muted); }
+.log-item.success { color: var(--success-color); }
+.log-item.error { color: var(--danger-color); }
 
 /* Плавающий AI Чат */
 .ai-chat-window {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 24px;
+    right: 24px;
     width: 340px;
-    height: 420px;
-    background: rgba(18, 22, 29, 0.92);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
+    height: 460px;
+    background: rgba(13, 18, 30, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(59, 130, 246, 0.3);
     border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 15px var(--accent-glow);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     z-index: 1000;
-    transform: translateY(120%);
+    transform: translateY(20px) scale(0.95);
     opacity: 0;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .ai-chat-window.active {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
+    pointer-events: auto;
 }
 
 .ai-chat-header {
-    padding: 12px 16px;
-    background: rgba(22, 27, 34, 0.8);
-    border-bottom: 1px solid var(--border-color);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--panel-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
 }
 
 .ai-chat-title {
@@ -403,23 +443,24 @@ body.hovered .custom-cursor {
 }
 
 .ai-status-dot {
-    width: 6px; height: 6px;
-    background: var(--accent);
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-color);
     border-radius: 50%;
-    box-shadow: 0 0 6px var(--accent);
+    box-shadow: 0 0 6px var(--accent-color);
 }
 
 .ai-close-btn {
-    background: none;
+    background: transparent;
     border: none;
     color: var(--text-muted);
-    font-size: 13px;
+    cursor: pointer;
+    font-size: 14px;
 }
-.ai-close-btn:hover { color: var(--text-main); }
 
 .ai-chat-messages {
     flex: 1;
-    padding: 12px;
+    padding: 14px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -429,45 +470,56 @@ body.hovered .custom-cursor {
 .ai-msg {
     max-width: 85%;
     padding: 10px 12px;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 12px;
     line-height: 1.4;
 }
 
 .ai-msg.ai {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--panel-border);
     align-self: flex-start;
-    color: var(--text-main);
+    border-bottom-left-radius: 4px;
 }
 
 .ai-msg.user {
-    background: var(--accent);
+    background: var(--accent-gradient);
     color: #fff;
     align-self: flex-end;
+    border-bottom-right-radius: 4px;
 }
 
 .ai-chat-input-area {
     padding: 12px;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--panel-border);
     display: flex;
     gap: 8px;
 }
 
-/* Модальное окно настроек */
+.ai-chat-input-area input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    color: var(--text-main);
+    font-size: 12px;
+    outline: none;
+}
+
+/* Модальные окна */
 .settings-modal-overlay {
     position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
+    top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    z-index: 10000;
+    backdrop-filter: blur(6px);
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    z-index: 2000;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s;
 }
 
 .settings-modal-overlay.active {
@@ -476,48 +528,39 @@ body.hovered .custom-cursor {
 }
 
 .settings-modal-window {
-    width: 420px;
-    background: rgba(18, 22, 29, 0.95);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
+    width: 400px;
+    background: #111827;
+    border: 1px solid var(--panel-border);
     border-radius: 16px;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 20px var(--accent-glow);
-    overflow: hidden;
-    transform: scale(0.95);
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.settings-modal-overlay.active .settings-modal-window {
-    transform: scale(1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .settings-modal-header {
-    padding: 14px 18px;
-    background: rgba(22, 27, 34, 0.9);
-    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .settings-modal-header h3 {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
 }
 
 .settings-close-btn {
-    background: none;
+    background: transparent;
     border: none;
     color: var(--text-muted);
+    cursor: pointer;
     font-size: 14px;
 }
-.settings-close-btn:hover { color: var(--text-main); }
 
 .settings-modal-body {
-    padding: 18px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
 }
 
 .setting-item {
@@ -525,8 +568,8 @@ body.hovered .custom-cursor {
     justify-content: space-between;
     align-items: center;
     background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border-color);
-    padding: 10px 14px;
+    border: 1px solid var(--panel-border);
+    padding: 10px 12px;
     border-radius: 10px;
 }
 
@@ -546,41 +589,32 @@ body.hovered .custom-cursor {
     color: var(--text-muted);
 }
 
-.setting-select {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    outline: none;
-}
-
 .secondary-btn {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--panel-border);
     color: var(--text-main);
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 12px;
-    font-weight: 600;
-    transition: all 0.2s;
-}
-.secondary-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); }
-
-.file-upload-label {
-    display: inline-block;
     cursor: pointer;
+    transition: background 0.2s;
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .danger-btn {
-    background: rgba(248, 81, 73, 0.1);
-    border: 1px solid rgba(248, 81, 73, 0.3);
-    color: #f85149;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 12px;
-    font-weight: 600;
-    transition: all 0.2s;
+    cursor: pointer;
+    transition: background 0.2s;
 }
-.danger-btn:hover { background: #f85149; color: #0d1117; }
+
+.danger-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+}
