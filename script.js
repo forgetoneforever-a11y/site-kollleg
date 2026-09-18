@@ -22,8 +22,30 @@ async function sendNoteToTelegram(taskText, dateStr) {
     }
 }
 
-// Помогалка для throw в одну строку
 function throw5Error(msg) { throw new Error(msg); }
+
+// --- Управление темами оформления ---
+function applyTheme(themeName) {
+    if (themeName === 'default') {
+        document.body.removeAttribute('data-theme');
+    } else {
+        document.body.setAttribute('data-theme', themeName);
+    }
+    localStorage.setItem('app_theme_choice', themeName);
+    
+    // Подсветка активной кнопки темы в модалке
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        if (btn.dataset.theme === themeName) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
+// Загрузка сохраненной темы при старте
+const savedTheme = localStorage.getItem('app_theme_choice') || 'default';
+applyTheme(savedTheme);
 
 // --- Кастомный курсор ---
 const cursor = document.createElement('div');
@@ -55,7 +77,6 @@ let currentDate = new Date();
 let selectedDateStr = formatDateKey(currentDate);
 let notesData = JSON.parse(localStorage.getItem('app_notes_data') || '{}');
 
-// Актуальное расписание для группы 211\1-09
 let collegeSchedule = JSON.parse(localStorage.getItem('college_schedule_data') || JSON.stringify({
     "понедельник": ["14-00", "Учебная практика", "мастерские"],
     "вторник": ["Проц. формообр.", "Иностранный язык", "История"],
@@ -83,7 +104,6 @@ function logToDebug(text, type = 'info') {
     logContent.scrollTop = logContent.scrollHeight;
 }
 
-// Рендер виджета расписания
 function fnRenderScheduleWidget() {
     const container = document.getElementById('scheduleViewContainer');
     if (!container) return;
@@ -175,7 +195,7 @@ function renderNotesForSelectedDate() {
         row.innerHTML = `
             <div class="note-top-line" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    ${time ? `<span style="font-size: 11px; background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 6px; border-radius: 4px;">${time}</span>` : ''}
+                    ${time ? `<span style="font-size: 11px; background: rgba(59, 130, 246, 0.2); color: var(--accent-color); padding: 2px 6px; border-radius: 4px;">${time}</span>` : ''}
                     <span style="font-size: 13px;">${text} ${sentTg}</span>
                 </div>
                 <button class="note-delete-btn" onclick="deleteTask('${selectedDateStr}', ${index})">Удалить</button>
@@ -248,7 +268,6 @@ document.getElementById('importScheduleImage')?.addEventListener('change', (e) =
     }, 1000);
 });
 
-// Вычисление даты по дню недели
 function getDateForDayOfWeek(dayName) {
     const daysMap = { "понедельник": 1, "вторник": 2, "среда": 3, "четверг": 4, "пятница": 5, "суббота": 6, "воскресенье": 0 };
     const targetDayNum = daysMap[dayName.toLowerCase()];
@@ -332,10 +351,19 @@ function sendAiMessage() {
 document.getElementById('aiSendBtn')?.addEventListener('click', sendAiMessage);
 aiInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendAiMessage(); });
 
-// Настройки
+// Настройки и темы
 const settingsModal = document.getElementById('settingsModal');
 document.getElementById('settingsBtn')?.addEventListener('click', () => settingsModal.classList.add('active'));
 document.getElementById('closeSettingsBtn')?.addEventListener('click', () => settingsModal.classList.remove('active'));
+
+// Интерактив выбора тем в модалке
+document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const theme = btn.dataset.theme;
+        applyTheme(theme);
+        logToDebug(`Изменена тема оформления на: ${theme}`, 'success');
+    });
+});
 
 document.getElementById('exportBtn')?.addEventListener('click', () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notesData, null, 2));
@@ -377,5 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderNotesForSelectedDate();
     fnRenderScheduleWidget();
-    logToDebug('Система полностью инициализирована (Группа 211).', 'success');
+    applyTheme(savedTheme);
+    logToDebug('Система полностью инициализирована.', 'success');
 });
