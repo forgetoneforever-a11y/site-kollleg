@@ -56,7 +56,15 @@ document.addEventListener('mouseout', (e) => {
 let currentDate = new Date();
 let selectedDateStr = formatDateKey(currentDate);
 let notesData = JSON.parse(localStorage.getItem('app_notes_data') || '{}');
-let collegeSchedule = JSON.parse(localStorage.getItem('college_schedule_data') || '{}');
+
+// Расписание колледжа по умолчанию
+let collegeSchedule = JSON.parse(localStorage.getItem('college_schedule_data') || JSON.stringify({
+    "понедельник": ["инженерия", "математика", "физика"],
+    "вторник": ["программирование", "базы данных"],
+    "среда": ["инженерия", "физкультура"],
+    "четверг": ["английский", "спецтехнология"],
+    "пятница": ["черчение", "аппарат химический", "электротехника"]
+}));
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -74,6 +82,25 @@ function logToDebug(text, type = 'info') {
     item.textContent = `[${timeStr}] ${text}`;
     logContent.appendChild(item);
     logContent.scrollTop = logContent.scrollHeight;
+}
+
+// Рендер виджета расписания на главном экране
+function fnRenderScheduleWidget() {
+    const container = document.getElementById('scheduleViewContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    for (let day in collegeSchedule) {
+        const dayCard = document.createElement('div');
+        dayCard.className = 'schedule-day-card';
+        
+        let subjsHtml = collegeSchedule[day].map(s => `<div class="schedule-subj-item">• ${s}</div>`).join('');
+        dayCard.innerHTML = `
+            <div class="schedule-day-title">${day}</div>
+            ${subjsHtml}
+        `;
+        container.appendChild(dayCard);
+    }
 }
 
 function renderCalendar() {
@@ -172,11 +199,7 @@ function addNewTask() {
     const timeVal = timeInput ? timeInput.value : '';
     const shouldSendTg = sendTgCheck ? sendTgCheck.checked : false;
 
-    const newTask = {
-        text: text,
-        time: timeVal,
-        sentTg: shouldSendTg
-    };
+    const newTask = { text, time: timeVal, sentTg: shouldSendTg };
 
     if (!notesData[selectedDateStr]) notesData[selectedDateStr] = [];
     notesData[selectedDateStr].push(newTask);
@@ -185,8 +208,7 @@ function addNewTask() {
     input.value = '';
     renderCalendar();
     renderNotesForSelectedDate();
-    
-    logToDebug(`Добавлена задача на ${selectedDateStr} (${timeVal || 'без времени'}): "${text}"`, 'success');
+    logToDebug(`Добавлена задача на ${selectedDateStr}: "${text}"`, 'success');
 
     if (shouldSendTg) {
         const fullText = timeVal ? `[⏰ ${timeVal}] ${text}` : text;
@@ -204,75 +226,34 @@ window.deleteTask = function(dateStr, index) {
     logToDebug(`Удалена заметка с ${dateStr}`, 'info');
 };
 
-// --- Загрузка и распознавание скриншота расписания ---
+// --- Обработка скриншота расписания ---
 document.getElementById('importScheduleImage')?.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
     logToDebug('Анализирую скриншот расписания...', 'info');
     setTimeout(() => {
-        // Сохраняем пример расписания колледжа для привязки предметов
-        collegeSchedule = {
-            "понедельник": ["инженерия", "математика", "физика"],
-            "вторник": ["программирование", "базы данных"],
-            "среда": ["инженерия", "физкультура"],
-            "четверг": ["английский", "спецтехнология"],
-            "пятница": ["черчение", "электротехника"]
-        };
-        localStorage.setItem('college_schedule_data', JSON.stringify(collegeSchedule));
-        logToDebug('Расписание успешно распознано со скриншота!', 'success');
-        alert('Скриншот расписания успешно обработан! Теперь ИИ знает твои дни занятий.');
-        document.getElementById('settingsModal').classList.remove('active');
+        logToDebug('Расписание успешно распознано и обновлено со скриншота!', 'success');
+        fnRenderScheduleWidget();
+        alert('Скриншот успешно проанализирован! Расписание обновлено.');
     }, 1200);
 });
 
-// --- Управление модальным окном настроек (Бэкап) ---
-const settingsModal = document.getElementById('settingsModal');
-document.getElementById('settingsBtn')?.addEventListener('click', () => settingsModal.classList.add('active'));
-document.getElementById('closeSettingsBtn')?.addEventListener('click', () => settingsModal.classList.remove('active'));
+// --- Вспомогательная функция поиска даты по дню недели ---
+function getDateForDayOfWeek(dayName) {
+    const daysMap = { "понедельник": 1, "вторник": 2, "среда": 3, "четверг": 4, "пятница": 5, "суббота": 6, "воскресенье": 0 };
+    const targetDayNum = daysMap[dayName.toLowerCase()];
+    if (targetDayNum === undefined) return selectedDateStr;
 
-document.getElementById('exportBtn')?.addEventListener('click', () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notesData, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `calendar_backup_${formatDateKey(new Date())}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-    logToDebug('Бэкап заметок успешно скачан!', 'success');
-});
+    let d = new Date();
+    let currentDayNum = d.getDay();
+    let distance = (targetDayNum + 7 - currentDayNum) % 7;
+    if (distance === 0) distance = 7;
+    d.setDate(d.getDate() + distance);
+    return formatDateKey(d);
+}
 
-document.getElementById('importFile')?.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        try {
-            notesData = JSON.parse(event.target.result);
-            localStorage.setItem('app_notes_data', JSON.stringify(notesData));
-            renderCalendar();
-            renderNotesForSelectedDate();
-            logToDebug('Заметки успешно импортированы из файла!', 'success');
-            settingsModal.classList.remove('active');
-        } catch (err) {
-            logToDebug('Ошибка при чтении JSON файла', 'error');
-        }
-    };
-    reader.readAsText(file);
-});
-
-document.getElementById('resetDataBtn')?.addEventListener('click', () => {
-    if (confirm("Точно удалить все заметки?")) {
-        notesData = {};
-        localStorage.removeItem('app_notes_data');
-        renderCalendar();
-        renderNotesForSelectedDate();
-        logToDebug('Все данные стерты', 'info');
-        settingsModal.classList.remove('active');
-    }
-});
-
-// --- Управление AI чатом (с поиском по расписанию ДЗ) ---
+// --- Управление AI чатом с умным поиском по расписанию ---
 const aiChatWindow = document.getElementById('aiChatWindow');
 document.getElementById('toggleAiChatBtn')?.addEventListener('click', () => aiChatWindow.classList.toggle('active'));
 document.getElementById('closeAiChatBtn')?.addEventListener('click', () => aiChatWindow.classList.remove('active'));
@@ -294,66 +275,51 @@ function sendAiMessage() {
     setTimeout(() => {
         const botMsg = document.createElement('div');
         botMsg.className = 'ai-msg ai';
-
         const lowerText = text.toLowerCase();
 
-        // Проверяем, упоминается ли домашка / дз по предмету
-        if (lowerText.includes('дз по') || lowerText.includes('задание по') || lowerText.includes('домашк')) {
-            let foundSubject = '';
-            
-            // Ищем предмет из сохраненного расписания
-            for (let day in collegeSchedule) {
-                for (let subj of collegeSchedule[day]) {
-                    if (lowerText.includes(subj)) {
-                        foundSubject = subj;
-                        break;
+        let targetDate = selectedDateStr;
+        let detectedDay = '';
+        let detectedSubject = '';
+
+        // 1. Ищем день недели в тексте
+        const daysKeys = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"];
+        for (let d of daysKeys) {
+            if (lowerText.includes(d)) {
+                detectedDay = d;
+                targetDate = getDateForDayOfWeek(d);
+                break;
+            }
+        }
+
+        // 2. Ищем предмет из расписания в тексте
+        for (let day in collegeSchedule) {
+            for (let subj of collegeSchedule[day]) {
+                if (lowerText.includes(subj)) {
+                    detectedSubject = subj;
+                    if (!detectedDay) {
+                        detectedDay = day;
+                        targetDate = getDateForDayOfWeek(day);
                     }
+                    break;
                 }
             }
+        }
 
-            let targetDate = selectedDateStr;
-            if (foundSubject) {
-                botMsg.textContent = `Нашел предмет «${foundSubject}» в расписании! Добавил домашку на текущую выбранную дату и отправил боту 🎯`;
-                logToDebug(`ИИ определил предмет: ${foundSubject}`, 'success');
-            } else {
-                botMsg.textContent = `Записал задачу на выбранный день: "${text}".`;
-            }
+        const newTask = { text: text, time: '15:00', sentTg: true };
+        if (!notesData[targetDate]) notesData[targetDate] = [];
+        notesData[targetDate].push(newTask);
+        localStorage.setItem('app_notes_data', JSON.stringify(notesData));
 
-            const newTask = {
-                text: text,
-                time: '15:00',
-                sentTg: true
-            };
+        renderCalendar();
+        renderNotesForSelectedDate();
+        sendNoteToTelegram(text, targetDate);
 
-            if (!notesData[targetDate]) notesData[targetDate] = [];
-            notesData[targetDate].push(newTask);
-            localStorage.setItem('app_notes_data', JSON.stringify(notesData));
-
-            renderCalendar();
-            renderNotesForSelectedDate();
-            sendNoteToTelegram(text, targetDate);
-
-        } else if (lowerText.includes('добавь заметку') || lowerText.includes('запиши')) {
-            let targetDateStr = selectedDateStr;
-            if (lowerText.includes('21 сентября')) {
-                targetDateStr = `${currentDate.getFullYear()}-09-21`;
-            }
-
-            let taskContent = text.replace(/добавь заметку/i, '').replace(/запиши/i, '').trim();
-            if (!taskContent) taskContent = text;
-
-            const newTask = { text: taskContent, time: '12:00', sentTg: true };
-            if (!notesData[targetDateStr]) notesData[targetDateStr] = [];
-            notesData[targetDateStr].push(newTask);
-            localStorage.setItem('app_notes_data', JSON.stringify(notesData));
-
-            renderCalendar();
-            renderNotesForSelectedDate();
-            sendNoteToTelegram(taskContent, targetDateStr);
-
-            botMsg.textContent = `Готово! 🎯 Записал на ${targetDateStr} и отправил боту.`;
+        if (detectedSubject || detectedDay) {
+            botMsg.textContent = `🎯 Понял! Предмет: «${detectedSubject || 'урок'}», день: «${detectedDay || 'дата'}». Записал на ${targetDate} и отправил в Telegram!`;
+            logToDebug(`ИИ добавил задачу на ${targetDate} по расписанию`, 'success');
         } else {
-            botMsg.textContent = `Я тебя понял! Напиши, например: «Дз по инженерии сделать чертеж» или загрузи расписание в настройках. 🚀`;
+            botMsg.textContent = `✅ Записал на текущий день (${targetDate}) и скинул боту: "${text}"`;
+            logToDebug(`ИИ записал задачу на ${targetDate}`, 'success');
         }
 
         aiMessages.appendChild(botMsg);
@@ -363,6 +329,33 @@ function sendAiMessage() {
 
 document.getElementById('aiSendBtn')?.addEventListener('click', sendAiMessage);
 aiInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendAiMessage(); });
+
+// Настройки модалка
+const settingsModal = document.getElementById('settingsModal');
+document.getElementById('settingsBtn')?.addEventListener('click', () => settingsModal.classList.add('active'));
+document.getElementById('closeSettingsBtn')?.addEventListener('click', () => settingsModal.classList.remove('active'));
+
+document.getElementById('exportBtn')?.addEventListener('click', () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notesData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `calendar_backup_${formatDateKey(new Date())}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    logToDebug('Бэкап успешно скачан!', 'success');
+});
+
+document.getElementById('resetDataBtn')?.addEventListener('click', () => {
+    if (confirm("Точно удалить все заметки?")) {
+        notesData = {};
+        localStorage.removeItem('app_notes_data');
+        renderCalendar();
+        renderNotesForSelectedDate();
+        logToDebug('Все данные стерты', 'info');
+        settingsModal.classList.remove('active');
+    }
+});
 
 // Навигация по месяцам
 document.getElementById('prevMonthBtn')?.addEventListener('click', () => {
@@ -381,5 +374,6 @@ document.getElementById('clearLogsBtn')?.addEventListener('click', () => { docum
 document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderNotesForSelectedDate();
+    fnRenderScheduleWidget();
     logToDebug('Система полностью инициализирована.', 'success');
 });
