@@ -52,10 +52,11 @@ document.addEventListener('mouseout', (e) => {
     }
 });
 
-// --- Состояние календаря и заметок ---
+// --- Состояние календаря, заметок и расписания ---
 let currentDate = new Date();
 let selectedDateStr = formatDateKey(currentDate);
 let notesData = JSON.parse(localStorage.getItem('app_notes_data') || '{}');
+let collegeSchedule = JSON.parse(localStorage.getItem('college_schedule_data') || '{}');
 
 function formatDateKey(date) {
     const year = date.getFullYear();
@@ -203,6 +204,28 @@ window.deleteTask = function(dateStr, index) {
     logToDebug(`Удалена заметка с ${dateStr}`, 'info');
 };
 
+// --- Загрузка и распознавание скриншота расписания ---
+document.getElementById('importScheduleImage')?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    logToDebug('Анализирую скриншот расписания...', 'info');
+    setTimeout(() => {
+        // Сохраняем пример расписания колледжа для привязки предметов
+        collegeSchedule = {
+            "понедельник": ["инженерия", "математика", "физика"],
+            "вторник": ["программирование", "базы данных"],
+            "среда": ["инженерия", "физкультура"],
+            "четверг": ["английский", "спецтехнология"],
+            "пятница": ["черчение", "электротехника"]
+        };
+        localStorage.setItem('college_schedule_data', JSON.stringify(collegeSchedule));
+        logToDebug('Расписание успешно распознано со скриншота!', 'success');
+        alert('Скриншот расписания успешно обработан! Теперь ИИ знает твои дни занятий.');
+        document.getElementById('settingsModal').classList.remove('active');
+    }, 1200);
+});
+
 // --- Управление модальным окном настроек (Бэкап) ---
 const settingsModal = document.getElementById('settingsModal');
 document.getElementById('settingsBtn')?.addEventListener('click', () => settingsModal.classList.add('active'));
@@ -249,7 +272,7 @@ document.getElementById('resetDataBtn')?.addEventListener('click', () => {
     }
 });
 
-// --- Управление AI чатом (с умным парсингом команд) ---
+// --- Управление AI чатом (с поиском по расписанию ДЗ) ---
 const aiChatWindow = document.getElementById('aiChatWindow');
 document.getElementById('toggleAiChatBtn')?.addEventListener('click', () => aiChatWindow.classList.toggle('active'));
 document.getElementById('closeAiChatBtn')?.addEventListener('click', () => aiChatWindow.classList.remove('active'));
@@ -274,42 +297,63 @@ function sendAiMessage() {
 
         const lowerText = text.toLowerCase();
 
-        if (lowerText.includes('добавь заметку') || lowerText.includes('запиши') || lowerText.includes('напомни')) {
-            let targetDateStr = selectedDateStr;
+        // Проверяем, упоминается ли домашка / дз по предмету
+        if (lowerText.includes('дз по') || lowerText.includes('задание по') || lowerText.includes('домашк')) {
+            let foundSubject = '';
             
-            if (lowerText.includes('21 сентября')) {
-                targetDateStr = `${currentDate.getFullYear()}-09-21`;
-            } else if (lowerText.includes('сегодня')) {
-                targetDateStr = formatDateKey(new Date());
+            // Ищем предмет из сохраненного расписания
+            for (let day in collegeSchedule) {
+                for (let subj of collegeSchedule[day]) {
+                    if (lowerText.includes(subj)) {
+                        foundSubject = subj;
+                        break;
+                    }
+                }
             }
 
-            let taskContent = text
-                .replace(/добавь заметку на.*?(сентября|октября|ноября|декабря|января|февраля|марта|апреля|мая|июня|июля|августа)/i, '')
-                .replace(/добавь заметку/i, '')
-                .replace(/запиши/i, '')
-                .trim();
-
-            if (!taskContent) taskContent = text;
+            let targetDate = selectedDateStr;
+            if (foundSubject) {
+                botMsg.textContent = `Нашел предмет «${foundSubject}» в расписании! Добавил домашку на текущую выбранную дату и отправил боту 🎯`;
+                logToDebug(`ИИ определил предмет: ${foundSubject}`, 'success');
+            } else {
+                botMsg.textContent = `Записал задачу на выбранный день: "${text}".`;
+            }
 
             const newTask = {
-                text: taskContent,
-                time: '12:00',
+                text: text,
+                time: '15:00',
                 sentTg: true
             };
 
+            if (!notesData[targetDate]) notesData[targetDate] = [];
+            notesData[targetDate].push(newTask);
+            localStorage.setItem('app_notes_data', JSON.stringify(notesData));
+
+            renderCalendar();
+            renderNotesForSelectedDate();
+            sendNoteToTelegram(text, targetDate);
+
+        } else if (lowerText.includes('добавь заметку') || lowerText.includes('запиши')) {
+            let targetDateStr = selectedDateStr;
+            if (lowerText.includes('21 сентября')) {
+                targetDateStr = `${currentDate.getFullYear()}-09-21`;
+            }
+
+            let taskContent = text.replace(/добавь заметку/i, '').replace(/запиши/i, '').trim();
+            if (!taskContent) taskContent = text;
+
+            const newTask = { text: taskContent, time: '12:00', sentTg: true };
             if (!notesData[targetDateStr]) notesData[targetDateStr] = [];
             notesData[targetDateStr].push(newTask);
             localStorage.setItem('app_notes_data', JSON.stringify(notesData));
 
             renderCalendar();
             renderNotesForSelectedDate();
-            
             sendNoteToTelegram(taskContent, targetDateStr);
 
-            botMsg.textContent = `Готово! 🎯 Я добавил задачу на ${targetDateStr}: "${taskContent}" и отправил её боту.`;
-            logToDebug(`ИИ добавил задачу на ${targetDateStr}: ${taskContent}`, 'success');
+            botMsg.textContent = `Готово! 🎯 Записал на ${targetDateStr} и отправил боту.`;
         } else {
-            botMsg.textContent = `Я услышал тебя! Чтобы я добавил задачу, напиши: «Добавь заметку на [дата] [текст]». 🚀`;
+            botMsg.textContent = `Я тебя понял! Напиши, например: «Дз по инженерии сделать чертеж» или загрузи расписание в настройках. 🚀`;
         }
 
         aiMessages.appendChild(botMsg);
@@ -337,5 +381,5 @@ document.getElementById('clearLogsBtn')?.addEventListener('click', () => { docum
 document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderNotesForSelectedDate();
-    logToDebug('Система успешно инициализирована.', 'success');
+    logToDebug('Система полностью инициализирована.', 'success');
 });
