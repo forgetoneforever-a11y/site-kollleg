@@ -972,13 +972,13 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: YouTube Оверлей с поиском -->
+    <!-- МОДАЛЬНОЕ ОКНО: YouTube Оверлей -->
     <div class="settings-modal-overlay" id="ytOverlayModal">
         <div class="settings-modal-window youtube-overlay-modal-window glass-panel" style="padding: 32px;">
             <div class="settings-modal-header" style="margin-bottom: 20px;">
                 <div>
                     <h3>📺 YouTube Оверлей & Медиаплеер</h3>
-                    <div class="app-subtitle" style="margin-top: 2px;">Поиск и фоновое воспроизведение музыки или видео во время учебы</div>
+                    <div class="app-subtitle" style="margin-top: 2px;">Фоновое воспроизведение музыки или видео во время учебы</div>
                 </div>
                 <button class="settings-close-btn" id="closeYtModalBtn">✕</button>
             </div>
@@ -987,14 +987,14 @@
                 <div class="yt-player-container">
                     <iframe id="ytIframePlayer" src="https://www.youtube.com/embed/jfKfPfyJRdk" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
-                <!-- Управление и поиск -->
+                <!-- Управление и ссылки -->
                 <div class="yt-controls-panel">
-                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Поиск или ссылка YouTube</div>
+                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Прямая ссылка или ID YouTube</div>
                     <div class="yt-url-input-row">
-                        <input type="text" id="ytUrlInput" placeholder="Введите название (например: Lofi hip hop) или ссылку...">
-                        <button class="primary-btn" id="loadYtVideoBtn" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">Найти</button>
+                        <input type="text" id="ytUrlInput" placeholder="Вставьте ссылку на YouTube (например: https://youtu.be/...)">
+                        <button class="primary-btn" id="loadYtVideoBtn" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">Загрузить</button>
                     </div>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Быстрый выбор фоновых трансляций и расслабляющей музыки:</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Быстрый выбор фоновых трансляций и расслабляющей музыки (работает стабильно):</div>
                     <div class="yt-presets">
                         <button class="yt-preset-chip" onclick="setYtPreset('jfKfPfyJRdk')">🎧 Lofi Girl (Chill Radio)</button>
                         <button class="yt-preset-chip" onclick="setYtPreset('5qap5aO4i9A')">☕ Lofi Hip Hop</button>
@@ -1354,13 +1354,12 @@
             document.getElementById('scheduleModal')?.classList.remove('active');
         }
 
-        // Логика YouTube плеера и поиска
+        // Логика YouTube плеера
         function extractYtVideoId(urlOrQuery) {
             if (!urlOrQuery) return 'jfKfPfyJRdk';
             let match = urlOrQuery.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
             if (match && match[1]) return match[1];
             
-            // Если введена строка поиска, используем встроенный поисковый запрос YouTube
             if (urlOrQuery.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(urlOrQuery)) {
                 return urlOrQuery;
             }
@@ -1387,10 +1386,7 @@
                     iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
                     addLog(`[YouTube] Воспроизведение по ссылке/ID`, 'success');
                 } else {
-                    // Переключаем плеер на режим поиска YouTube по ключевым словам
-                    const encodedQuery = encodeURIComponent(query);
-                    iframe.src = `https://www.youtube.com/embed?listType=search&list=${encodedQuery}&autoplay=1`;
-                    addLog(`[YouTube] Поиск по запросу: "${query}"`, 'success');
+                    addLog(`[YouTube] Прямой поиск в iframe заблокирован YouTube. Воспользуйтесь готовыми пресетами или вставьте прямую ссылку на видео!`, 'error');
                 }
             }
             input.value = '';
