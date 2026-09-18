@@ -43,9 +43,20 @@
                     <span id="taskCounter" class="task-counter">0 историй</span>
                 </div>
                 
-                <div class="notes-input-area">
+                <div class="notes-input-area" style="flex-direction: column; gap: 8px;">
                     <input type="text" id="noteInput" placeholder="Новая задача или заметка...">
-                    <button id="addNoteBtn" class="primary-btn">⚡</button>
+                    
+                    <!-- Панель дополнительных функций (время и отправка в ТГ) -->
+                    <div style="display: flex; gap: 8px; width: 100%; align-items: center;">
+                        <input type="time" id="noteTimeInput" class="control-btn" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 6px 10px; border-radius: 8px; font-family: inherit; font-size: 13px;" value="12:00">
+                        
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="sendToTgCheck" checked style="accent-color: #3b82f6;"> 
+                            <span>Бот в Telegram</span>
+                        </label>
+
+                        <button id="addNoteBtn" class="primary-btn" style="margin-left: auto;">⚡</button>
+                    </div>
                 </div>
 
                 <div id="notesList" class="notes-list"></div>
@@ -72,7 +83,7 @@
             <button id="closeAiChatBtn" class="ai-close-btn">✕</button>
         </div>
         <div id="aiChatMessages" class="ai-chat-messages">
-            <div class="ai-msg ai">Привет! Я твой локальный ассистент. Чем помочь по учебе или коду? 🚀</div>
+            <div class="ai-msg ai">Привет! Я твой локальный ассистент. Напиши, например: «Добавь заметку на 21 сентября чертеж по инженерии» 🚀</div>
         </div>
         <div class="ai-chat-input-area">
             <input type="text" id="aiChatInput" placeholder="Спроси о чем-нибудь...">
@@ -100,7 +111,7 @@
                         <span class="setting-title">Импорт данных</span>
                         <span class="setting-desc">Загрузить заметки из файла</span>
                     </div>
-                    <label class="file-upload-label secondary-btn">
+                    <label class="file-upload-label secondary-btn" style="cursor: pointer;">
                         Загрузить <input type="file" id="importFile" accept=".json" style="display: none;">
                     </label>
                 </div>
