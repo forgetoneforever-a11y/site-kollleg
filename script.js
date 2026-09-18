@@ -200,6 +200,47 @@ function renderSchedule() {
     });
 }
 
+// Функции YouTube плеера
+function extractYtVideoId(urlOrQuery) {
+    if (!urlOrQuery) return null;
+    let match = urlOrQuery.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    if (match && match[1]) return match[1];
+    
+    if (urlOrQuery.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(urlOrQuery)) {
+        return urlOrQuery;
+    }
+    return null;
+}
+
+window.setYtPreset = function(videoId) {
+    const iframe = document.getElementById('ytIframePlayer');
+    if (iframe) {
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        addLog(`[YouTube] Запущен фоновый пресет`, 'success');
+    }
+};
+
+function loadCustomYtVideo() {
+    const input = document.getElementById('ytUrlInput');
+    if (!input || !input.value.trim()) return;
+    const query = input.value.trim();
+    const videoId = extractYtVideoId(query);
+
+    const iframe = document.getElementById('ytIframePlayer');
+    if (iframe) {
+        if (videoId) {
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            addLog(`[YouTube] Воспроизведение по ссылке/ID`, 'success');
+        } else {
+            // Если введен текст вместо ссылки — открываем поиск на YouTube в новой вкладке обходным путем
+            const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+            window.open(searchUrl, '_blank');
+            addLog(`[YouTube] Запрос "${query}" открыт в новой вкладке (защита iframe)`, 'info');
+        }
+    }
+    input.value = '';
+}
+
 function addLog(text, type = 'info') {
     const logContent = document.getElementById('logContent');
     if (!logContent) return;
@@ -246,6 +287,15 @@ function setupEventListeners() {
         if (e.target === scheduleModal) {
             scheduleModal.classList.remove('active');
         }
+    });
+
+    // Модальное окно YouTube оверлея
+    const ytModal = document.getElementById('ytOverlayModal');
+    document.getElementById('openYtOverlayBtn')?.addEventListener('click', () => ytModal?.classList.add('active'));
+    document.getElementById('closeYtModalBtn')?.addEventListener('click', () => ytModal?.classList.remove('active'));
+    document.getElementById('loadYtVideoBtn')?.addEventListener('click', loadCustomYtVideo);
+    document.getElementById('ytUrlInput')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loadCustomYtVideo();
     });
 
     // Модальное окно Настроек
@@ -329,7 +379,7 @@ function setupEventListeners() {
         if (e.key === 'Enter') handleAiSend();
     });
 
-    // Кастомный курсор движение (исправленное)
+    // Кастомный курсор движение
     const cursor = document.getElementById('customCursor');
     const dot = document.getElementById('cursorDot');
     
